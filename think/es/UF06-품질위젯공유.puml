@@ -1,0 +1,90 @@
+@startuml UF06-품질위젯공유
+!theme mono
+
+title UF06 - 실시간 품질 위젯 & 스냅샷 공유 (S13)
+
+actor "PM·기획자" as PM
+participant "플랫폼" as Platform
+collections "CDN\n<<외부>>" as CDN
+collections "Notion\n<<외부>>" as Notion
+collections "Slack\n<<외부>>" as Slack
+actor "경영진·파트너" as EXEC
+
+== 1. 위젯 설정 ==
+
+PM -> Platform : [커맨드] 위젯설정\n(에이전트ID, 표시지표선택,\n업계비교활성화여부, 공개범위)
+
+note right of Platform
+  **이벤트**: 위젯설정됨
+  데이터: 위젯ID, 에이전트ID,\n표시지표목록, 업계비교활성화,\n공개범위(링크공유/내부전용), 설정일시
+end note
+
+note over Platform
+  [정책] 위젯 표시 언어 규칙
+  - 기술 지표명(Faithfulness 등) 비노출
+  - 신호등(빨강/노랑/초록) 색상 표시 필수
+  - "업계 상위 N%" 형식으로 표현
+  - 실시간 데이터 갱신 (최대 1시간 캐시)
+end note
+
+== 2. 공유 URL 생성 ==
+
+PM -> Platform : [커맨드] 공유URL생성\n(위젯ID, 만료기간설정)
+
+note over Platform
+  [정책] URL 유효기간 규칙
+  스냅샷 URL → 30일 유효 (보안)
+  실시간 위젯 URL → 무기한
+end note
+
+note right of Platform
+  **이벤트**: 공유URL생성됨
+  데이터: 위젯ID, 공유URL,\nURL유형(실시간/스냅샷),\n만료일시, 생성일시
+end note
+
+== 3. 임베드 코드 생성 ==
+
+PM -> Platform : [커맨드] 임베드코드생성\n(위젯ID, 임베드대상(Notion/Slack))
+
+note right of Platform
+  **이벤트**: 임베드코드생성됨
+  데이터: 위젯ID, iframe코드,\n임베드대상, 권장크기(가로/세로), 생성일시
+end note
+
+PM -> Notion : Notion 페이지에 임베드 삽입\n(iframe 코드)
+PM -> Slack : Slack 채널에 URL 공유
+
+== 4. 위젯 조회 (경영진·파트너) ==
+
+PM -> EXEC : 공유URL 전송\n(이메일 또는 메신저)
+EXEC -> Platform : [커맨드] 위젯조회\n(공유URL, 조회일시)
+
+Platform -> CDN : 위젯정적자산요청
+CDN --> Platform : 위젯자산반환
+
+note over Platform
+  [정책] 미인증 조회자 처리
+  - 읽기 전용 표시
+  - "Powered by [플랫폼명]" 워터마크
+  - 회원가입 유도 CTA 표시
+end note
+
+note right of Platform
+  **이벤트**: 위젯조회됨
+  데이터: 위젯ID, 조회자정보(비인증/인증),\n현재품질상태(신호등색상), 업계대비%,\n마지막갱신일시, 조회일시
+end note
+
+Platform --> EXEC : 위젯 렌더링\n(신호등 색상, "업계 상위 35%", 마지막 갱신일시)
+
+== 5. 스냅샷 생성 (특정 시점 고정) ==
+
+PM -> Platform : [커맨드] 스냅샷생성\n(위젯ID, 캡처시점)
+
+note right of Platform
+  **이벤트**: 스냅샷생성됨
+  데이터: 스냅샷ID, 캡처일시,\n고정된품질상태, 스냅샷URL,\n만료일시(30일)
+end note
+
+Platform --> PM : 스냅샷URL 반환\n(30일 유효, 공유 가능)
+
+@enduml

@@ -1,0 +1,77 @@
+@startuml UF02-품질평가실행
+!theme mono
+
+title UF02 - 품질 평가 실행
+
+actor "ML 엔지니어 /\nAI품질 엔지니어" as ENG
+participant "플랫폼" as Platform
+collections "LLM 평가 API\n<<외부>>" as LLMAPI
+collections "객체 스토리지\n<<외부>>" as Storage
+
+== 1. 테스트셋 업로드 ==
+
+ENG -> Platform : [커맨드] 테스트셋업로드\n(파일명, 형식(CSV/JSON/YAML), 테스트케이스목록)
+
+note over Platform
+  [정책] 형식 및 필수컬럼 검증
+  필수: 질문(question), 정답(answer), 컨텍스트(context)
+  형식: CSV / JSON / YAML 허용
+end note
+
+Platform -> Storage : 파일저장\n(테스트셋파일)
+Storage --> Platform : 저장경로반환
+
+note right of Platform
+  **이벤트**: 테스트셋업로드됨
+  데이터: 테스트셋ID, 파일명, 케이스수,\n저장경로, 업로드일시
+end note
+
+== 2. 평가 실행 ==
+
+ENG -> Platform : [커맨드] 평가실행\n(에이전트ID, 테스트셋ID, 평가지표목록,\n평가모드(전체/경량))
+
+note right of Platform
+  **이벤트**: 평가실행됨
+  데이터: 평가ID, 에이전트ID, 테스트셋ID,\n지표목록, 실행일시, 평가모드
+end note
+
+== 3. AI 응답 생성 ==
+
+loop 각 테스트케이스에 대해
+  Platform -> LLMAPI : [커맨드] AI응답생성요청\n(질문, 컨텍스트, 모델설정)
+  LLMAPI --> Platform : AI응답반환\n(응답내용, 토큰수, 응답시간ms)
+end
+
+note right of Platform
+  **이벤트**: AI응답생성됨
+  데이터: 평가ID, 케이스별응답목록,\n총토큰수, 평균응답시간ms
+end note
+
+== 4. 품질 지표 산출 ==
+
+Platform -> LLMAPI : [커맨드] 품질지표계산\n(LLM-as-Judge: 질문/정답/AI응답/컨텍스트)
+LLMAPI --> Platform : 지표점수반환\n(Faithfulness, AnswerRelevancy, ContextRecall)
+
+note right of Platform
+  **이벤트**: 품질지표산출됨
+  데이터: 평가ID, Faithfulness점수,\nAnswerRelevancy점수, ContextRecall점수,\n전일대비변화율, 임계값위반여부, 산출일시
+end note
+
+note over Platform
+  [정책] 임계값 비교
+  위반 지표 존재 시 → UF03(이상감지알림) 자동 트리거
+  전일 대비 10% 이상 하락 시 → 경고 플래그 부여
+end note
+
+== 5. 결과 확인 ==
+
+ENG -> Platform : [커맨드] 결과확인\n(평가ID)
+
+note right of Platform
+  **이벤트**: 평가결과조회됨
+  데이터: 지표별점수, 추이그래프데이터,\n위반지표목록, 경고플래그, 이전평가비교
+end note
+
+Platform --> ENG : 평가 결과 표시\n(지표별점수, 추이그래프, 위반내역)
+
+@enduml

@@ -1,0 +1,80 @@
+@startuml UF01-AI에이전트등록
+!theme mono
+
+title UF01 - AI 에이전트 등록
+
+actor "ML 엔지니어" as MLE
+participant "플랫폼" as Platform
+collections "LLM 서비스\n<<외부>>" as LLM
+
+== 1. 사용자 인증 ==
+
+MLE -> Platform : [커맨드] 로그인\n(이메일, 비밀번호)
+note right of Platform
+  **이벤트**: 사용자인증됨
+  데이터: 사용자ID, 인증토큰, 로그인일시
+end note
+
+== 2. AI 에이전트 등록 ==
+
+MLE -> Platform : [커맨드] AI에이전트등록\n(에이전트명, 서비스유형, API엔드포인트URL,\nAPI키, 모델명)
+
+note right of Platform
+  **이벤트**: AI에이전트등록됨
+  데이터: 에이전트ID(UUID), 등록일시,\n에이전트명, 서비스유형
+end note
+
+note over Platform
+  [정책] 기본임계값 자동설정
+  Faithfulness ≥ 0.7
+  AnswerRelevancy ≥ 0.7
+  ContextRecall ≥ 0.7
+end note
+
+note right of Platform
+  **이벤트**: 기본임계값설정됨
+  데이터: 에이전트ID, 지표명, 기본임계값
+end note
+
+== 3. 연결 테스트 ==
+
+Platform -> LLM : [커맨드] 연결테스트실행\n(API엔드포인트, API키, 테스트쿼리)
+
+alt 연결 성공
+  LLM --> Platform : 테스트응답반환\n(응답내용, 응답시간ms)
+  note right of Platform
+    **이벤트**: 연결확인됨
+    데이터: 에이전트ID, 응답시간ms,\n연결상태=정상, 확인일시
+  end note
+else 연결 실패
+  LLM --> Platform : 오류반환\n(오류코드, 오류유형)
+  note over Platform
+    [정책] 오류 유형 분류
+    인증실패 / 타임아웃 / 엔드포인트오류
+  end note
+  note right of Platform
+    **이벤트**: 연결실패됨
+    데이터: 에이전트ID, 오류유형,\n오류메시지, 실패일시
+  end note
+  Platform --> MLE : 재시도 안내 표시
+end
+
+== 4. 임계값 설정 ==
+
+MLE -> Platform : [커맨드] 임계값설정\n(지표명, 최솟값, 경고기준, 위험기준)
+note right of Platform
+  **이벤트**: 임계값설정됨
+  데이터: 에이전트ID, 지표별임계값,\n심각도기준, 설정일시
+end note
+
+== 5. 알림 채널 설정 ==
+
+MLE -> Platform : [커맨드] 알림채널설정\n(채널유형, 웹훅URL/이메일주소, 수신자목록)
+note right of Platform
+  **이벤트**: 알림채널설정됨
+  데이터: 채널ID, 채널유형(Slack/이메일/Teams),\n대상주소, 수신자목록, 설정일시
+end note
+
+Platform --> MLE : 등록 완료 안내\n(에이전트ID, 연결상태, 설정요약)
+
+@enduml

@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="875" viewBox="0 0 1060 875">
+
+  <!-- Background -->
+  <rect width="1060" height="875" fill="#F8FAFC"/>
+
+  <!-- Title -->
+  <text x="530" y="40" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="21" font-weight="bold" fill="#0F172A">솔루션 우선순위 평가 매트릭스</text>
+  <text x="530" y="62" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="12" fill="#64748B">AI Agent 품질 측정 플랫폼 · 비즈니스 영향도(B) × 실현 가능성(F) · 원 크기 = 총 투표수</text>
+
+  <!-- Quadrant backgrounds: chart x:150-860, y:78-648, center X=505, Y=363 -->
+  <rect x="150" y="78" width="355" height="285" fill="#EFF6FF"/>
+  <rect x="505" y="78" width="355" height="285" fill="#F0FDF4"/>
+  <rect x="150" y="363" width="355" height="285" fill="#FFF1F2"/>
+  <rect x="505" y="363" width="355" height="285" fill="#FFFBEB"/>
+
+  <!-- Chart border -->
+  <rect x="150" y="78" width="710" height="570" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Center dividers -->
+  <line x1="505" y1="78" x2="505" y2="648" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <line x1="150" y1="363" x2="860" y2="363" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="8,4"/>
+
+  <!-- Quadrant labels -->
+  <text x="165" y="103" font-family="'Segoe UI',Arial,sans-serif" font-size="15" font-weight="bold" fill="#1D4ED8">Big Bets</text>
+  <text x="165" y="120" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#93C5FD">실현가능성 낮음 · 비즈니스 영향도 높음</text>
+
+  <text x="520" y="103" font-family="'Segoe UI',Arial,sans-serif" font-size="15" font-weight="bold" fill="#15803D">No Brainers</text>
+  <text x="520" y="120" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#86EFAC">실현가능성 높음 · 비즈니스 영향도 높음</text>
+  <text x="687" y="220" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="13" fill="#BBF7D0" font-style="italic">(해당 없음)</text>
+
+  <text x="165" y="390" font-family="'Segoe UI',Arial,sans-serif" font-size="15" font-weight="bold" fill="#DC2626">Unwise</text>
+  <text x="165" y="407" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#FCA5A5">실현가능성 낮음 · 비즈니스 영향도 낮음</text>
+
+  <text x="520" y="390" font-family="'Segoe UI',Arial,sans-serif" font-size="15" font-weight="bold" fill="#B45309">Utilities</text>
+  <text x="520" y="407" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#FCD34D">실현가능성 높음 · 비즈니스 영향도 낮음</text>
+
+  <!-- Y axis label -->
+  <text x="62" y="363" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="13" font-weight="bold" fill="#475569" transform="rotate(-90,62,363)">비즈니스 영향도 (Business Impact)</text>
+
+  <!-- Y axis ticks: B=0→Y=618, B=1→Y=490, B=2→Y=363, B=3→Y=236, B=4→Y=108 -->
+  <line x1="148" y1="108" x2="154" y2="108" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="148" y1="236" x2="154" y2="236" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="148" y1="363" x2="154" y2="363" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="148" y1="491" x2="154" y2="491" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="148" y1="618" x2="154" y2="618" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="143" y="112" text-anchor="end" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">4</text>
+  <text x="143" y="240" text-anchor="end" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">3</text>
+  <text x="143" y="367" text-anchor="end" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">2</text>
+  <text x="143" y="495" text-anchor="end" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">1</text>
+  <text x="143" y="622" text-anchor="end" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">0</text>
+  <text x="108" y="92"  font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#CBD5E1">높음 ↑</text>
+  <text x="108" y="643" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#CBD5E1">↓ 낮음</text>
+
+  <!-- X axis label -->
+  <text x="505" y="675" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="13" font-weight="bold" fill="#475569">실현 가능성 (Feasibility)</text>
+
+  <!-- X axis ticks: F=0→X=180, F=1→X=343, F=2→X=505, F=3→X=668, F=4→X=830 -->
+  <line x1="180" y1="648" x2="180" y2="654" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="343" y1="648" x2="343" y2="654" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="505" y1="648" x2="505" y2="654" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="668" y1="648" x2="668" y2="654" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="830" y1="648" x2="830" y2="654" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="180" y="663" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">0</text>
+  <text x="343" y="663" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">1</text>
+  <text x="505" y="663" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">2</text>
+  <text x="668" y="663" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">3</text>
+  <text x="830" y="663" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#94A3B8">4</text>
+  <text x="165" y="675" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#CBD5E1">← 낮음</text>
+  <text x="820" y="675" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#CBD5E1">높음 →</text>
+
+  <!-- ===== DATA POINTS ===== -->
+
+  <!-- BIG BETS (Blue #2563EB) -->
+
+  <!-- S01 B=4, F=0: X=180→190, Y=108, r=22 (4표) -->
+  <circle cx="190" cy="108" r="22" fill="#2563EB" stroke="#1D4ED8" stroke-width="2.5"/>
+  <text x="190" y="113" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S01</text>
+
+  <!-- S02 B=3, F=0: X=180→190, Y=236, r=20 (3표) -->
+  <circle cx="190" cy="236" r="20" fill="#2563EB" stroke="#1D4ED8" stroke-width="2"/>
+  <text x="190" y="241" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S02</text>
+
+  <!-- S04 B=2, F=0: offset above center Y=363, r=18 (2표) -->
+  <circle cx="168" cy="346" r="18" fill="#2563EB" stroke="#1D4ED8" stroke-width="2"/>
+  <text x="168" y="351" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S04</text>
+
+  <!-- S10 B=2, F=0: offset at center Y=363 (borderline), r=18 (2표) -->
+  <circle cx="205" cy="363" r="18" fill="#2563EB" stroke="#1D4ED8" stroke-width="2"/>
+  <text x="205" y="368" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S10</text>
+
+  <!-- UTILITIES (Amber #D97706) -->
+
+  <!-- S08 B=0, F=4: X=830, Y=618, r=22 (4표) -->
+  <circle cx="830" cy="618" r="22" fill="#D97706" stroke="#B45309" stroke-width="2.5"/>
+  <text x="830" y="623" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S08</text>
+
+  <!-- S14 B=0, F=3: X=668, Y=618, r=20 (3표) -->
+  <circle cx="668" cy="618" r="20" fill="#D97706" stroke="#B45309" stroke-width="2"/>
+  <text x="668" y="623" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S14</text>
+
+  <!-- S07 B=0, F=2: near center X=505, bottom, r=18 (2표) -->
+  <circle cx="492" cy="607" r="18" fill="#D97706" stroke="#B45309" stroke-width="2"/>
+  <text x="492" y="612" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S07</text>
+
+  <!-- S13 B=0, F=2: offset from S07, r=18 (2표) -->
+  <circle cx="520" cy="622" r="18" fill="#D97706" stroke="#B45309" stroke-width="2"/>
+  <text x="520" y="627" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S13</text>
+
+  <!-- UNWISE (Slate #64748B) -->
+
+  <!-- S05 B=1, F=1: X=343, Y=491, r=18 (2표) -->
+  <circle cx="343" cy="491" r="18" fill="#64748B" stroke="#475569" stroke-width="2"/>
+  <text x="343" y="496" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">S05</text>
+
+  <!-- S09 B=1, F=0: X=180, Y=491, offset, r=15 (1표) -->
+  <circle cx="167" cy="473" r="15" fill="#64748B" stroke="#475569" stroke-width="1.5"/>
+  <text x="167" y="478" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="bold" fill="white">S09</text>
+
+  <!-- S11 B=1, F=0: offset from S09, r=15 (1표) -->
+  <circle cx="186" cy="490" r="15" fill="#64748B" stroke="#475569" stroke-width="1.5"/>
+  <text x="186" y="495" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="bold" fill="white">S11</text>
+
+  <!-- S15 B=1, F=0: offset, r=15 (1표) -->
+  <circle cx="205" cy="473" r="15" fill="#64748B" stroke="#475569" stroke-width="1.5"/>
+  <text x="205" y="478" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="bold" fill="white">S15</text>
+
+  <!-- S03 B=0, F=1: X=343, Y=618, r=15 (1표) -->
+  <circle cx="328" cy="605" r="15" fill="#64748B" stroke="#475569" stroke-width="1.5"/>
+  <text x="328" y="610" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="bold" fill="white">S03</text>
+
+  <!-- S06 B=0, F=1: offset, r=15 (1표) -->
+  <circle cx="346" cy="620" r="15" fill="#64748B" stroke="#475569" stroke-width="1.5"/>
+  <text x="346" y="625" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="bold" fill="white">S06</text>
+
+  <!-- S12 B=0, F=1: offset, r=15 (1표) -->
+  <circle cx="365" cy="605" r="15" fill="#64748B" stroke="#475569" stroke-width="1.5"/>
+  <text x="365" y="610" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="bold" fill="white">S12</text>
+
+  <!-- 0-vote cluster (Light Slate #94A3B8) -->
+  <circle cx="170" cy="601" r="13" fill="#94A3B8" stroke="#64748B" stroke-width="1.5"/>
+  <text x="170" y="606" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="bold" fill="white">S16</text>
+
+  <circle cx="185" cy="614" r="13" fill="#94A3B8" stroke="#64748B" stroke-width="1.5"/>
+  <text x="185" y="619" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="bold" fill="white">S17</text>
+
+  <circle cx="201" cy="601" r="13" fill="#94A3B8" stroke="#64748B" stroke-width="1.5"/>
+  <text x="201" y="606" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="bold" fill="white">S18</text>
+
+  <circle cx="167" cy="617" r="13" fill="#94A3B8" stroke="#64748B" stroke-width="1.5"/>
+  <text x="167" y="622" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="bold" fill="white">S19</text>
+
+  <circle cx="183" cy="630" r="13" fill="#94A3B8" stroke="#64748B" stroke-width="1.5"/>
+  <text x="183" y="635" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="bold" fill="white">S20</text>
+
+  <circle cx="200" cy="617" r="13" fill="#94A3B8" stroke="#64748B" stroke-width="1.5"/>
+  <text x="200" y="622" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="bold" fill="white">S21</text>
+
+  <!-- ===== LEGEND ===== -->
+  <rect x="148" y="658" width="900" height="205" fill="white" stroke="#E2E8F0" stroke-width="1" rx="6"/>
+  <text x="598" y="678" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="13" font-weight="bold" fill="#374151">범례 (Legend)</text>
+
+  <!-- Quadrant color guide -->
+  <rect x="168" y="685" width="11" height="11" fill="#2563EB" rx="2"/>
+  <text x="183" y="695" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#374151">Big Bets</text>
+  <rect x="248" y="685" width="11" height="11" fill="#22C55E" rx="2"/>
+  <text x="263" y="695" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#374151">No Brainers</text>
+  <rect x="358" y="685" width="11" height="11" fill="#D97706" rx="2"/>
+  <text x="373" y="695" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#374151">Utilities</text>
+  <rect x="432" y="685" width="11" height="11" fill="#64748B" rx="2"/>
+  <text x="447" y="695" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#374151">Unwise (1+표)</text>
+  <rect x="552" y="685" width="11" height="11" fill="#94A3B8" rx="2"/>
+  <text x="567" y="695" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#374151">Unwise (0표)</text>
+
+  <!-- Column 1: S01–S07 -->
+  <circle cx="178" cy="712" r="7" fill="#2563EB"/>
+  <text x="190" y="716" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S01</tspan> AI 품질 해석 엔진</text>
+  <circle cx="178" cy="730" r="7" fill="#2563EB"/>
+  <text x="190" y="734" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S02</tspan> 업계 익명 벤치마크 플랫폼</text>
+  <circle cx="178" cy="748" r="7" fill="#64748B"/>
+  <text x="190" y="752" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S03</tspan> 도메인별 품질 스타터팩</text>
+  <circle cx="178" cy="766" r="7" fill="#2563EB"/>
+  <text x="190" y="770" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S04</tspan> 도메인 전문가 품질 평가 네트워크</text>
+  <circle cx="178" cy="784" r="7" fill="#64748B"/>
+  <text x="190" y="788" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S05</tspan> 서비스 설명→자동 테스트셋 생성 AI</text>
+  <circle cx="178" cy="802" r="7" fill="#64748B"/>
+  <text x="190" y="806" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S06</tspan> 컴플레인→테스트케이스 자동 변환</text>
+  <circle cx="178" cy="820" r="7" fill="#D97706"/>
+  <text x="190" y="824" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S07</tspan> 워크플로우 통합 품질 체크포인트</text>
+
+  <!-- Column 2: S08–S14 -->
+  <circle cx="530" cy="712" r="7" fill="#D97706"/>
+  <text x="542" y="716" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S08</tspan> 이상 감지 알림봇</text>
+  <circle cx="530" cy="730" r="7" fill="#64748B"/>
+  <text x="542" y="734" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S09</tspan> 품질 API 유니버스</text>
+  <circle cx="530" cy="748" r="7" fill="#2563EB"/>
+  <text x="542" y="752" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S10</tspan> 품질-비즈니스 연결 대시보드</text>
+  <circle cx="530" cy="766" r="7" fill="#64748B"/>
+  <text x="542" y="770" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S11</tspan> 품질 예측 수정구슬</text>
+  <circle cx="530" cy="784" r="7" fill="#64748B"/>
+  <text x="542" y="788" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S12</tspan> 품질 가계부</text>
+  <circle cx="530" cy="802" r="7" fill="#D97706"/>
+  <text x="542" y="806" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S13</tspan> 실시간 품질 위젯 &amp; 스냅샷 공유</text>
+  <circle cx="530" cy="820" r="7" fill="#D97706"/>
+  <text x="542" y="824" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S14</tspan> 자동 품질 주간 브리핑</text>
+
+  <!-- Column 3: S15–S21 -->
+  <circle cx="800" cy="712" r="7" fill="#64748B"/>
+  <text x="812" y="716" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S15</tspan> 품질 타임머신</text>
+  <circle cx="800" cy="730" r="7" fill="#94A3B8"/>
+  <text x="812" y="734" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S16</tspan> 팀별 품질 목표 관리판</text>
+  <circle cx="800" cy="748" r="7" fill="#94A3B8"/>
+  <text x="812" y="752" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S17</tspan> 조직 품질 문화 지도</text>
+  <circle cx="800" cy="766" r="7" fill="#94A3B8"/>
+  <text x="812" y="770" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S18</tspan> AI 품질 자율 회복 시스템</text>
+  <circle cx="800" cy="784" r="7" fill="#94A3B8"/>
+  <text x="812" y="788" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S19</tspan> AI가 AI를 평가하는 자율 평가 네트워크</text>
+  <circle cx="800" cy="802" r="7" fill="#94A3B8"/>
+  <text x="812" y="806" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S20</tspan> AI Agent 품질 NFT</text>
+  <circle cx="800" cy="820" r="7" fill="#94A3B8"/>
+  <text x="812" y="824" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#1E293B"><tspan font-weight="bold">S21</tspan> AI Agent 품질 세계 올림픽</text>
+
+</svg>

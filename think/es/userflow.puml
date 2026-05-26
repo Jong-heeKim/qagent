@@ -1,0 +1,54 @@
+@startuml userflow
+!theme mono
+
+title AI Agent 품질 측정 플랫폼 - 유저플로우 연결도
+
+actor "ML 엔지니어" as MLE
+actor "AI품질 엔지니어" as QE
+actor "개발자" as DEV
+actor "PM·기획자" as PM
+actor "경영진·파트너" as EXEC
+
+participant "AI에이전트 등록\n(UF01-AI에이전트등록)" as UF01
+participant "품질평가 실행\n(UF02-품질평가실행)" as UF02
+participant "이상감지 알림\n(UF03-이상감지알림)" as UF03
+participant "주간브리핑 발송\n(UF04-주간브리핑발송)" as UF04
+participant "CI/CD 품질체크\n(UF05-CICD품질체크)" as UF05
+participant "품질위젯 공유\n(UF06-품질위젯공유)" as UF06
+
+== 기술 직군 여정 ==
+
+MLE -> UF01 : 1. AI에이전트 등록 및 설정
+UF01 --> UF02 : 2. 등록 완료 후 첫 품질평가 실행
+QE -> UF02 : 3. 테스트셋 업로드 후 평가 실행
+UF02 --> UF03 : 4. 임계값 위반 감지 시 자동 트리거
+UF02 --> UF05 : 5. PR/커밋 품질 게이트 연동
+
+== 개발 직군 여정 ==
+
+DEV -> UF05 : 6. PR 생성 시 자동 품질체크
+UF05 --> UF02 : 7. 게이트 실패 시 상세 평가 결과 확인
+
+== 비기술 직군 여정 ==
+
+PM -> UF06 : 8. 품질 위젯 설정 및 공유
+UF06 --> EXEC : 9. 경영진에게 URL 공유
+UF03 --> PM : 10. 이상 감지 알림 수신 (Slack/이메일)
+UF04 --> PM : 11. 주간 브리핑 자동 수신 (매주 월요일)
+
+== 시스템 자동화 여정 ==
+
+UF03 -> UF03 : 12. 1시간 주기 자동 모니터링
+UF04 -> UF04 : 13. 매주 월요일 오전 자동 발송
+
+== 플로우 순환 구조 ==
+
+note over UF01, UF06
+  [서비스 이용 흐름]
+  ML엔지니어: 등록(UF01) → 평가(UF02) → 이상감지 자동 수신(UF03)
+  개발자: 평가 연동(UF02) → CI/CD 체크(UF05) 반복
+  PM·기획자: 위젯 설정(UF06) → 주간 브리핑 자동 수신(UF04)
+  경영진: 위젯 URL로 품질 현황 즉시 조회(UF06)
+end note
+
+@enduml

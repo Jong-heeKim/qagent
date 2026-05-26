@@ -1,0 +1,93 @@
+@startuml UF03-이상감지알림
+!theme mono
+
+title UF03 - 이상 감지 알림 (S08)
+
+participant "스케줄러\n<<시스템>>" as Scheduler
+participant "플랫폼" as Platform
+collections "CI/CD 시스템\n<<외부>>" as CICD
+collections "Slack\n<<외부>>" as Slack
+collections "이메일 서버\n<<외부>>" as Email
+collections "Microsoft Teams\n<<외부>>" as Teams
+actor "PM·ML엔지니어·\n팀장" as Receiver
+
+== 1. 품질 지표 수집 (1시간 주기 자동 실행) ==
+
+Scheduler -> Platform : [커맨드] 품질지표모니터링\n(에이전트ID목록, 기준일시)
+
+note right of Platform
+  **이벤트**: 품질지표수집됨
+  데이터: 에이전트별지표값,\n수집일시, 측정주기
+end note
+
+== 2. 임계값 비교 ==
+
+Platform -> Platform : [커맨드] 임계값비교실행\n(수집지표 vs 설정임계값)
+
+alt 임계값 위반 감지
+  note right of Platform
+    **이벤트**: 임계값초과감지됨
+    데이터: 에이전트ID, 위반지표명,\n현재값, 임계값, 변화율
+  end note
+
+  note over Platform
+    [정책] 24시간 중복 알림 방지
+    동일 지표 알림은 24시간 내 1회만 발송
+  end note
+
+  note over Platform
+    [정책] 심각도 분류
+    임계값 10% 미만 위반 → 경고(노랑)
+    10~25% 위반 → 주의(주황)
+    25% 초과 위반 → 긴급(빨강)
+  end note
+
+else 정상 범위
+  note right of Platform
+    **이벤트**: 정상범위확인됨
+    데이터: 에이전트ID, 확인일시
+  end note
+  Platform -> Scheduler : 다음 주기 대기
+end
+
+== 3. 배포 이력 조회 (맥락 추가용) ==
+
+Platform -> CICD : [커맨드] 최근배포이력조회\n(에이전트ID, 조회기간)
+CICD --> Platform : 배포이력반환\n(최근배포시각, 버전, 변경내역)
+
+== 4. 알림 메시지 생성 ==
+
+Platform -> Platform : [커맨드] 알림메시지생성\n(이상내용, 심각도, 배포이력, 대시보드링크)
+
+note right of Platform
+  **이벤트**: 알림메시지생성됨
+  데이터: 메시지ID, 메시지내용,\n심각도등급, 원클릭대시보드링크,\n최근배포시각
+  예시: "어제 대비 Faithfulness 18% 하락,\n최근 배포 이후 이상 징후 감지"
+end note
+
+== 5. 알림 발송 ==
+
+Platform -> Slack : [커맨드] Slack알림발송\n(메시지, 심각도색상, 대시보드링크)
+Platform -> Email : [커맨드] 이메일알림발송\n(수신자목록, 제목, 본문, 링크)
+Platform -> Teams : [커맨드] Teams알림발송\n(메시지카드, 심각도, 링크)
+
+alt 발송 성공
+  note right of Platform
+    **이벤트**: 알림발송됨
+    데이터: 알림ID, 채널별발송결과,\n발송일시, 수신자수
+  end note
+  Receiver <-- Slack : 알림 수신
+  Receiver <-- Email : 알림 수신
+
+else 발송 실패
+  note over Platform
+    [정책] 발송 실패 처리
+    3회 재시도 → 실패 시 대체 채널 전송
+  end note
+  note right of Platform
+    **이벤트**: 알림발송실패됨
+    데이터: 알림ID, 실패채널, 오류내용,\n재시도횟수, 실패일시
+  end note
+end
+
+@enduml

@@ -1,0 +1,95 @@
+@startuml UF05-CICD품질체크
+!theme mono
+
+title UF05 - CI/CD 워크플로우 통합 품질 체크포인트 (S07)
+
+actor "개발자" as DEV
+collections "GitHub/Jenkins\n<<외부>>" as CICD
+participant "플랫폼" as Platform
+collections "LLM 평가 API\n<<외부>>" as LLMAPI
+
+== 1. 품질 게이트 트리거 ==
+
+DEV -> CICD : [커맨드] PR생성 또는 커밋푸시\n(PR번호, 커밋해시, 브랜치명, 변경내역)
+
+CICD -> Platform : [커맨드] 품질게이트트리거\n(PR번호, 커밋해시, 에이전트ID, 게이트설정YAML)
+
+note right of Platform
+  **이벤트**: 품질게이트트리거됨
+  데이터: 게이트ID, PR번호, 커밋해시,\n에이전트ID, 게이트설정(기준지표/임계값),\n트리거일시
+end note
+
+note over Platform
+  [정책] 경량 평가 모드 적용
+  PR 단계에서는 핵심 케이스 50건만 평가
+  (전체 평가 대비 비용/속도 최적화)
+end note
+
+== 2. 품질 평가 실행 ==
+
+Platform -> Platform : [커맨드] 품질평가실행\n(에이전트ID, 경량테스트셋, 게이트지표목록)
+
+note right of Platform
+  **이벤트**: 평가실행됨
+  데이터: 평가ID, 게이트ID, 케이스수(50건),\n실행일시
+end note
+
+Platform -> LLMAPI : [커맨드] AI응답생성 및 지표계산\n(경량테스트케이스, 에이전트설정)
+LLMAPI --> Platform : 지표점수반환\n(Faithfulness, AnswerRelevancy, ContextRecall)
+
+note right of Platform
+  **이벤트**: 평가완료됨
+  데이터: 평가ID, 지표별점수, 기준점수,\n이전평가대비변화율, 평가소요시간
+end note
+
+== 3. 게이트 판정 ==
+
+Platform -> Platform : [커맨드] 게이트판정\n(평가결과 vs YAML게이트설정)
+
+note over Platform
+  [정책] 게이트 기준 (YAML 설정 기반)
+  예시:
+  faithfulness_min: 0.80
+  answer_relevancy_min: 0.75
+  context_recall_min: 0.70
+end note
+
+alt 게이트 통과 (모든 지표 기준 충족)
+  note right of Platform
+    **이벤트**: 게이트통과됨
+    데이터: 게이트ID, 판정결과=통과,\n지표별점수, 판정일시
+  end note
+
+  Platform -> CICD : [커맨드] 판정결과반환\n(상태=Pass, 지표요약)
+
+  note right of Platform
+    **이벤트**: 배포허용됨
+    데이터: 게이트ID, PR번호,\n허용일시, 지표요약
+  end note
+
+  CICD --> DEV : 배포 승인 알림\n(Pass: 품질 기준 충족)
+
+else 게이트 차단 (기준 미달 지표 존재)
+  note right of Platform
+    **이벤트**: 게이트차단됨
+    데이터: 게이트ID, 판정결과=차단,\n위반지표명, 현재값, 기준값,\n차이값, 판정일시
+  end note
+
+  note over Platform
+    [정책] 차단 사유 메시지 자동 생성
+    예시: "Faithfulness 0.82→0.74로 하락,
+    설정 기준 0.80 미달로 배포 보류"
+  end note
+
+  Platform -> CICD : [커맨드] 판정결과반환\n(상태=Fail, 위반지표, 사유메시지)
+
+  note right of Platform
+    **이벤트**: 배포차단됨
+    데이터: 게이트ID, PR번호,\n차단일시, 위반내역, 사유메시지
+  end note
+
+  CICD --> DEV : 배포 차단 알림\n(Fail: 위반지표 및 구체적 사유 포함)
+  DEV -> Platform : [커맨드] 상세결과확인\n(게이트ID, 평가ID)
+end
+
+@enduml

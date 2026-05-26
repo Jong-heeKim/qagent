@@ -1,0 +1,91 @@
+@startuml UF04-주간브리핑발송
+!theme mono
+
+title UF04 - 자동 품질 주간 브리핑 발송 (S14)
+
+participant "Cron 스케줄러\n<<시스템>>" as Cron
+participant "플랫폼" as Platform
+collections "LLM API\n<<외부>>" as LLMAPI
+collections "Slack\n<<외부>>" as Slack
+collections "이메일 서버\n<<외부>>" as Email
+actor "PM·기획자·팀장" as Receiver
+
+== 1. 주간 스케줄 실행 (매주 월요일 오전 9시) ==
+
+Cron -> Platform : [커맨드] 주간스케줄실행\n(실행일시, 집계기간: 지난 7일)
+
+note right of Platform
+  **이벤트**: 주간스케줄실행됨
+  데이터: 실행일시, 집계기간시작,\n집계기간종료
+end note
+
+== 2. 주간 데이터 수집 ==
+
+Platform -> Platform : [커맨드] 주간데이터수집\n(에이전트ID목록, 집계기간, 업계비교기준)
+
+note over Platform
+  [정책] 데이터 없을 시 처리
+  해당 주 평가 데이터 없으면
+  "이번 주 평가 데이터가 없습니다" 브리핑 생성
+end note
+
+note right of Platform
+  **이벤트**: 주간데이터수집됨
+  데이터: 지표별주간평균, 업계평균대비%,\n주요이슈목록, 이상발생횟수,\n복구이력, 개선/악화지표목록
+end note
+
+== 3. 브리핑 문구 생성 ==
+
+Platform -> LLMAPI : [커맨드] 브리핑문구생성\n(주간데이터, 업계비교결과, 생성규칙)
+
+note over Platform
+  [정책] 브리핑 생성 언어 규칙
+  - 기술 지표명(Faithfulness 등) 비노출
+  - 업계 대비 % 표현 필수 포함
+  - 주요 이벤트 날짜와 함께 서술
+  예시: "지난 주 정확도는 업계 평균보다 8% 높았습니다.
+  화요일 일시적 주의 구간 진입 후 수요일 복구되었습니다."
+end note
+
+LLMAPI --> Platform : 브리핑문구반환\n(비기술 언어 요약, 이슈 설명, 개선 제언)
+
+note right of Platform
+  **이벤트**: 브리핑생성됨
+  데이터: 브리핑ID, 생성일시,\n요약문구, 주요이슈목록, 개선제언
+end note
+
+== 4. 수신자 목록 조회 ==
+
+Platform -> Platform : [커맨드] 수신자목록조회\n(에이전트ID, 수신자그룹설정)
+
+note right of Platform
+  **이벤트**: 수신자목록조회됨
+  데이터: 수신자ID목록, 채널유형별목록,\n총수신자수
+end note
+
+== 5. 브리핑 발송 ==
+
+Platform -> Slack : [커맨드] Slack브리핑발송\n(브리핑내용, 채널ID, 하단서명)
+Platform -> Email : [커맨드] 이메일브리핑발송\n(수신자목록, 제목, HTML본문, 하단서명)
+
+note over Platform
+  [정책] 발송 실패 시 재발송
+  발송 실패 → 화요일 오전 9시 자동 재발송
+end note
+
+alt 발송 성공
+  note right of Platform
+    **이벤트**: 브리핑발송됨
+    데이터: 브리핑ID, 발송채널목록,\n발송일시, 총수신자수, 발송결과
+  end note
+  Receiver <-- Slack : 주간 브리핑 수신
+  Receiver <-- Email : 주간 브리핑 수신
+
+else 발송 실패
+  note right of Platform
+    **이벤트**: 브리핑발송실패됨
+    데이터: 브리핑ID, 실패채널,\n재발송예약일시
+  end note
+end
+
+@enduml
