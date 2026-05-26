@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>08 평가실행 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.eval-config { padding: 16px; }
+.eval-progress-wrap { padding: 24px 16px; display: none; }
+.progress-info { display:flex; justify-content:space-between; font-size:13px; color:var(--text-2); margin-bottom:6px; }
+.reconnect-banner {
+  background: var(--yellow-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size:12px;
+  color: var(--yellow-text);
+  margin-top: 12px;
+  display: none;
+}
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">품질 평가 실행</span>
+    </div>
+
+    <!-- 설정 단계 -->
+    <div class="eval-config" id="configPanel">
+      <div class="form-group">
+        <label class="label label-required">1. 에이전트 선택</label>
+        <select class="input-field" id="agentSelect">
+          <option value="agnt-001" selected>챗봇-A (RAG)</option>
+          <option value="agnt-002">RAG-B (RAG)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label label-required">2. 테스트셋 선택</label>
+        <select class="input-field" id="testsetSelect">
+          <option value="ts-001" selected>testset-v2.csv (150건)</option>
+          <option value="ts-002">testset-v1.json (80건)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label">3. 평가 지표 (복수 선택)</label>
+        <div class="card" style="padding:8px 14px;">
+          <div class="checkbox-row"><input type="checkbox" id="chk_f" checked><label class="checkbox-label" for="chk_f">Faithfulness</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk_ar" checked><label class="checkbox-label" for="chk_ar">AnswerRelevancy</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk_cr" checked><label class="checkbox-label" for="chk_cr">ContextRecall</label></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="label">4. 평가 모드</label>
+        <div class="card" style="padding:8px 14px;">
+          <div class="radio-row">
+            <input type="radio" name="mode" id="mode_full" value="full" checked>
+            <div class="radio-content">
+              <div class="radio-label">전체 모드</div>
+              <div class="radio-desc">150건 처리 · 예상 ~8분 · 정밀한 결과</div>
+            </div>
+          </div>
+          <div class="radio-row">
+            <input type="radio" name="mode" id="mode_light" value="light">
+            <div class="radio-content">
+              <div class="radio-label">경량 모드</div>
+              <div class="radio-desc">50건 처리 · 예상 ~3분 · 저비용</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-xl" id="startBtn">▶ 평가 실행 시작</button>
+    </div>
+
+    <!-- 진행 단계 -->
+    <div class="eval-progress-wrap" id="progressPanel">
+      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">평가 진행 중...</div>
+      <div style="font-size:13px; color:var(--text-3); margin-bottom:20px;">에이전트: 챗봇-A · testset-v2.csv</div>
+
+      <!-- 진행률 -->
+      <div style="background:var(--primary-ghost); border:1px solid var(--primary-pale); border-radius:var(--radius); padding:16px; margin-bottom:16px;">
+        <div class="progress-info">
+          <span id="progressLabel">처리: 0 / 150 케이스</span>
+          <span id="progressPct" style="font-weight:700; color:var(--primary);">0%</span>
+        </div>
+        <div class="progress-bar" style="margin-bottom:8px;">
+          <div class="progress-fill" id="progressFill" style="width:0%;"></div>
+        </div>
+        <div style="font-size:12px; color:var(--text-3);" id="progressTime">소요: 0초 · 남은 시간: 약 8분</div>
+      </div>
+
+      <button class="btn btn-secondary btn-md btn-full" id="cancelBtn">평가 취소</button>
+
+      <!-- 재연결 배너 (시뮬레이션) -->
+      <div class="reconnect-banner" id="reconnectBanner">
+        ⚠ 연결 끊김 — 3초 후 자동 재연결합니다...
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item active" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+
+    <!-- 취소 확인 모달 -->
+    <div class="modal-center" id="cancelModal">
+      <div class="modal-box">
+        <div class="modal-title">평가 취소</div>
+        <p style="font-size:14px; color:var(--text-2); margin-bottom:16px;">진행 중인 평가를 취소하시겠습니까?<br>취소 후 동일 설정으로 재시작할 수 있습니다.</p>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-md" style="flex:1;" onclick="closeModal('cancelModal')">계속 진행</button>
+          <button class="btn btn-danger btn-md" style="flex:1;" onclick="cancelEval()">취소</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('08-평가실행.html');
+
+let timer, elapsed = 0, current = 0, total = 150;
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  document.getElementById('configPanel').style.display = 'none';
+  document.getElementById('progressPanel').style.display = 'block';
+
+  // 5초 후 재연결 배너 시뮬레이션
+  setTimeout(() => {
+    document.getElementById('reconnectBanner').style.display = 'block';
+    setTimeout(() => document.getElementById('reconnectBanner').style.display = 'none', 4000);
+  }, 5000);
+
+  timer = setInterval(() => {
+    elapsed++;
+    current = Math.min(current + Math.floor(Math.random() * 4) + 1, total);
+    const pct = Math.round(current / total * 100);
+
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `처리: ${current} / ${total} 케이스`;
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('progressTime').textContent = `소요: ${elapsed}초 · 남은 시간: 약 ${Math.max(0, Math.round((total - current) / 18))}분`;
+
+    if (current >= total) {
+      clearInterval(timer);
+      setTimeout(() => { window.location.href = '09-평가결과.html'; }, 800);
+    }
+  }, 200);
+});
+
+document.getElementById('cancelBtn').addEventListener('click', () => openModal('cancelModal'));
+
+function cancelEval() {
+  clearInterval(timer);
+  closeModal('cancelModal');
+  document.getElementById('progressPanel').style.display = 'none';
+  document.getElementById('configPanel').style.display = 'block';
+  current = 0; elapsed = 0;
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressPct').textContent = '0%';
+  document.getElementById('progressLabel').textContent = '처리: 0 / 150 케이스';
+  showToast('평가가 취소되었습니다', 'warning');
+}
+</script>
+</body>
+</html>

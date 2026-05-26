@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 에이전트등록 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.test-result-box {
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.test-success { background: var(--green-bg); border: 1px solid var(--green); }
+.test-fail    { background: var(--red-bg);   border: 1px solid var(--red); }
+.threshold-row { display:flex; justify-content:space-between; padding: 6px 0; font-size:13px; border-bottom:1px solid var(--slate-100); }
+.threshold-row:last-child { border-bottom:none; }
+.threshold-key { color: var(--text-2); }
+.threshold-val { font-weight:700; font-family: var(--font-mono); color: var(--primary); }
+.complete-action { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="04-에이전트목록.html">‹</a>
+      <span class="page-header-title">에이전트 등록</span>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-item active" id="stepDot1">
+        <div class="step-circle">①</div>
+        <div class="step-label">기본 정보</div>
+      </div>
+      <div class="step-connector" id="conn1"></div>
+      <div class="step-item pending" id="stepDot2">
+        <div class="step-circle">②</div>
+        <div class="step-label">연결 테스트</div>
+      </div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="step-item pending" id="stepDot3">
+        <div class="step-circle">③</div>
+        <div class="step-label">완료</div>
+      </div>
+    </div>
+
+    <!-- Step 1: 기본 정보 -->
+    <div id="step1" class="content fade-in">
+      <div class="form-group">
+        <label class="label label-required">에이전트명</label>
+        <input class="input-field" id="agentName" type="text" placeholder="예: 챗봇-A" value="신규 챗봇">
+      </div>
+      <div class="form-group">
+        <label class="label label-required">서비스 유형</label>
+        <select class="input-field" id="serviceType">
+          <option value="rag" selected>RAG</option>
+          <option value="chatbot">챗봇</option>
+          <option value="search">검색증강</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label label-required">API 엔드포인트 URL</label>
+        <input class="input-field input-mono" id="apiUrl" type="url" placeholder="https://api.example.com/v1" value="https://new-chat.company.ai/v1">
+        <div class="input-hint">ℹ 내부망 운영 시, 플랫폼 발신 IP를 방화벽 화이트리스트에 등록해 주세요</div>
+      </div>
+      <div class="form-group">
+        <label class="label label-required">API 키</label>
+        <div class="input-wrapper">
+          <input class="input-field" id="apiKey" type="password" placeholder="sk-..." value="sk-abcdef1234567890">
+          <span class="input-eye" id="apiKeyEye">👁</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="label label-required">모델명</label>
+        <input class="input-field" id="modelName" type="text" placeholder="예: gpt-4o" value="gpt-4o">
+      </div>
+      <button class="btn btn-primary btn-xl" id="step1Next">다음 단계 →</button>
+    </div>
+
+    <!-- Step 2: 연결 테스트 -->
+    <div id="step2" class="content fade-in" style="display:none;">
+      <!-- 로딩 상태 -->
+      <div id="testLoading" style="text-align:center; padding:32px 0;">
+        <div class="spinner" style="width:40px;height:40px;border-width:3px;margin:0 auto 16px; border-color:rgba(37,99,235,0.2); border-top-color:var(--primary);"></div>
+        <div style="font-size:15px; font-weight:600; color:var(--text);">연결 테스트 중...</div>
+        <div style="font-size:13px; color:var(--text-3); margin-top:6px;">API 응답을 확인하고 있습니다</div>
+      </div>
+
+      <!-- 성공 상태 -->
+      <div id="testSuccess" style="display:none;">
+        <div class="test-result-box test-success">
+          <div style="font-size:18px; font-weight:700; color:var(--green-text); margin-bottom:8px;">✅ 연결 성공</div>
+          <div style="font-size:13px; color:var(--green-text);">응답시간: <strong>320ms</strong> · 상태: 정상</div>
+        </div>
+        <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:8px;">기본 임계값 자동 설정됨:</div>
+        <div class="card" style="padding:12px;">
+          <div class="threshold-row"><span class="threshold-key">Faithfulness</span><span class="threshold-val">≥ 0.70</span></div>
+          <div class="threshold-row"><span class="threshold-key">AnswerRelevancy</span><span class="threshold-val">≥ 0.70</span></div>
+          <div class="threshold-row"><span class="threshold-key">ContextRecall</span><span class="threshold-val">≥ 0.70</span></div>
+        </div>
+        <div style="font-size:12px; color:var(--text-3); margin-bottom:16px;">나중에 에이전트 상세 설정에서 임계값을 변경할 수 있습니다</div>
+        <button class="btn btn-primary btn-xl" id="step2Next">다음 단계 →</button>
+      </div>
+
+      <!-- 실패 상태 -->
+      <div id="testFail" style="display:none;">
+        <div class="test-result-box test-fail">
+          <div style="font-size:18px; font-weight:700; color:var(--red-text); margin-bottom:8px;">❌ 연결 실패</div>
+          <div style="font-size:13px; color:var(--red-text);">오류: API 키 인증 실패 (401 Unauthorized)</div>
+        </div>
+        <div style="font-size:13px; color:var(--text-2); background:var(--slate-50); padding:12px; border-radius:8px; margin-bottom:16px;">
+          💡 API 키를 확인하고 다시 시도해 주세요
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-md" style="flex:1;" id="backToStep1">← 이전으로 수정</button>
+          <button class="btn btn-primary btn-md" style="flex:1;" id="retryTest">재시도</button>
+        </div>
+      </div>
+
+      <!-- 실패 시뮬레이션 버튼 -->
+      <button class="btn btn-ghost btn-sm btn-full" id="simulateFail" style="margin-top:8px; font-size:11px; color:var(--text-3);">❌ 실패 시뮬레이션</button>
+    </div>
+
+    <!-- Step 3: 완료 -->
+    <div id="step3" class="content fade-in" style="display:none; text-align:center;">
+      <div style="font-size:64px; margin-bottom:16px;">🎉</div>
+      <div style="font-size:22px; font-weight:800; color:var(--text); margin-bottom:8px;">등록 완료!</div>
+      <div style="font-size:14px; color:var(--text-2); margin-bottom:20px;">
+        에이전트 ID: <span style="font-family:var(--font-mono); color:var(--primary);">agnt-new-001</span>
+      </div>
+      <div style="background:var(--primary-ghost); border-radius:var(--radius); padding:14px; margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:10px;">다음 단계를 선택하세요</div>
+        <div class="complete-action">
+          <a href="06-에이전트상세설정.html" class="btn btn-primary btn-md">🎛 임계값 설정하기</a>
+          <a href="08-평가실행.html" class="btn btn-secondary btn-md">▶ 바로 평가 실행하기</a>
+          <a href="03-메인대시보드.html" class="btn btn-ghost btn-md">🏠 대시보드로 이동</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('05-에이전트등록.html');
+
+document.getElementById('apiKeyEye').addEventListener('click', () => {
+  const el = document.getElementById('apiKey');
+  el.type = el.type === 'password' ? 'text' : 'password';
+});
+
+function goStep(n) {
+  ['step1','step2','step3'].forEach((id,i) => {
+    document.getElementById(id).style.display = i+1 === n ? 'block' : 'none';
+  });
+  ['stepDot1','stepDot2','stepDot3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-item ' + (i+1 < n ? 'done' : i+1 === n ? 'active' : 'pending');
+  });
+  ['conn1','conn2'].forEach((id,i) => {
+    document.getElementById(id).className = 'step-connector' + (i+1 < n ? ' done' : '');
+  });
+}
+
+function runConnectionTest() {
+  document.getElementById('testLoading').style.display = 'block';
+  document.getElementById('testSuccess').style.display = 'none';
+  document.getElementById('testFail').style.display = 'none';
+  document.getElementById('simulateFail').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('testLoading').style.display = 'none';
+    document.getElementById('testSuccess').style.display = 'block';
+    document.getElementById('simulateFail').style.display = 'none';
+  }, 1800);
+}
+
+document.getElementById('step1Next').addEventListener('click', () => {
+  goStep(2);
+  runConnectionTest();
+});
+document.getElementById('step2Next').addEventListener('click', () => goStep(3));
+document.getElementById('backToStep1').addEventListener('click', () => goStep(1));
+document.getElementById('retryTest').addEventListener('click', runConnectionTest);
+document.getElementById('simulateFail').addEventListener('click', () => {
+  document.getElementById('testLoading').style.display = 'none';
+  document.getElementById('testSuccess').style.display = 'none';
+  document.getElementById('testFail').style.display = 'block';
+  document.getElementById('simulateFail').style.display = 'none';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16 위젯설정 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.widget-preview {
+  background:var(--card-bg);
+  border:2px dashed var(--border-2);
+  border-radius:var(--radius);
+  padding:20px;
+  text-align:center;
+  margin-top:12px;
+}
+.widget-status-dot {
+  width:64px; height:64px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 8px;
+  font-size:28px;
+}
+.widget-status-dot.green { background:#DCFCE7; border:3px solid #22C55E; color:#22C55E; }
+.widget-status-dot.yellow { background:#FEF3C7; border:3px solid #FBBF24; color:#FBBF24; }
+.snapshot-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--slate-50); border-radius:var(--radius-sm); margin-bottom:8px; font-size:12px; }
+.snapshot-url { flex:1; font-family:var(--font-mono); color:var(--primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-area { background:var(--slate-900,#0F172A); color:#CBD5E1; font-family:var(--font-mono); font-size:11px; border-radius:var(--radius); padding:14px; line-height:1.6; word-break:break-all; white-space:pre-wrap; position:relative; }
+.code-area .copy-btn-abs { position:absolute; top:8px; right:8px; padding:3px 8px; font-size:11px; background:rgba(255,255,255,.1); color:#E2E8F0; border:1px solid rgba(255,255,255,.2); border-radius:6px; cursor:pointer; }
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">위젯 설정</span>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="0">위젯 설정</button>
+      <button class="tab-btn" data-tab="1">공유 URL</button>
+      <button class="tab-btn" data-tab="2">임베드 코드</button>
+    </div>
+
+    <!-- Tab 0: 위젯 설정 -->
+    <div class="tab-panel active content" id="panel0">
+      <div class="form-group">
+        <label class="label label-required">에이전트</label>
+        <select class="input-field" id="widgetAgent" onchange="updatePreview()">
+          <option value="0" selected>챗봇-A</option>
+          <option value="1">RAG-B</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="label">표시 지표 (비즈니스 언어)</label>
+        <div class="card" style="padding:8px 14px;">
+          <div class="checkbox-row"><input type="checkbox" id="chk_acc" checked><label class="checkbox-label" for="chk_acc">정확도</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk_rel" checked><label class="checkbox-label" for="chk_rel">관련성</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk_com" checked><label class="checkbox-label" for="chk_com">완전성</label></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label">업계 비교</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="toggle on" data-toggle id="industryToggle" onclick="updatePreview()"></button>
+          <span style="font-size:12px; color:var(--text-2);">"업계 상위 N%" 형식으로 표시</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label">공개 범위</label>
+        <div class="card" style="padding:8px 14px;">
+          <div class="radio-row">
+            <input type="radio" name="scope" id="scope_pub" value="pub" checked>
+            <div class="radio-content">
+              <div class="radio-label">링크 공유</div>
+              <div class="radio-desc">누구나 URL로 접근 가능</div>
+            </div>
+          </div>
+          <div class="radio-row">
+            <input type="radio" name="scope" id="scope_priv" value="priv">
+            <div class="radio-content">
+              <div class="radio-label">내부 전용</div>
+              <div class="radio-desc">로그인 필요</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 미리보기 -->
+      <div class="widget-preview" id="widgetPreview">
+        <div class="widget-status-dot green" id="previewDot">●</div>
+        <div style="font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px;" id="previewStatus">정상</div>
+        <div style="font-size:20px; font-weight:800; color:var(--primary); margin-bottom:4px;" id="previewPct">업계 상위 72%</div>
+        <div style="font-size:11px; color:var(--text-3);">갱신: 2026-05-26 12:00</div>
+      </div>
+
+      <button class="btn btn-primary btn-xl" style="margin-top:16px;" id="saveBtn" onclick="showToast('위젯 설정이 저장되었습니다','success')">저장</button>
+    </div>
+
+    <!-- Tab 1: 공유 URL -->
+    <div class="tab-panel content" id="panel1">
+      <div class="section">
+        <div class="section-title">실시간 위젯 URL</div>
+        <div class="snapshot-row" style="background:var(--primary-ghost);">
+          <span class="snapshot-url">https://platform.qaagent.io/widget/abc123</span>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('URL이 복사됨')">복사</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('새 창으로 열기')">↗</button>
+        </div>
+        <div style="font-size:11px; color:var(--text-3); margin-top:4px;">유효기간: 무기한</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section" style="margin-top:16px;">
+        <div class="section-title">스냅샷 URL 생성</div>
+        <div style="font-size:13px; color:var(--text-2); margin-bottom:12px;">현재 시점 품질 상태를 고정하여 공유 (30일 유효)</div>
+        <button class="btn btn-secondary btn-md btn-full" id="snapshotBtn" onclick="createSnapshot()">스냅샷 생성</button>
+      </div>
+
+      <div class="section" style="margin-top:16px;" id="snapshotList">
+        <div class="section-title">생성된 스냅샷</div>
+        <div class="snapshot-row">
+          <div style="flex:1;">
+            <div style="font-size:12px; color:var(--text-2); margin-bottom:2px;">2026-05-20 14:30 · D-28</div>
+            <span class="snapshot-url">https://platform.qaagent.io/snap/xyz789</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('URL이 복사됨')">복사</button>
+          <button class="btn btn-danger btn-sm" onclick="this.closest('.snapshot-row').remove(); showToast('삭제됨')">삭제</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: 임베드 코드 -->
+    <div class="tab-panel content" id="panel2">
+      <div class="form-group">
+        <label class="label">임베드 대상</label>
+        <div class="card" style="padding:8px 14px;">
+          <div class="radio-row">
+            <input type="radio" name="embed" id="emb_notion" value="notion" checked onchange="updateEmbed()">
+            <div class="radio-content"><div class="radio-label">Notion</div></div>
+          </div>
+          <div class="radio-row">
+            <input type="radio" name="embed" id="emb_slack" value="slack" onchange="updateEmbed()">
+            <div class="radio-content"><div class="radio-label">Slack (URL 공유 방식)</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title" id="embedTitle">Notion 임베드 코드</div>
+        <div class="code-area" id="embedCode"><button class="copy-btn-abs" onclick="showToast('코드가 복사됨')">복사</button>&lt;iframe
+  src="https://platform.qaagent.io/widget/abc123"
+  width="600"
+  height="400"
+  frameborder="0"
+  allow="fullscreen"&gt;&lt;/iframe&gt;</div>
+        <div style="font-size:11px; color:var(--text-3); margin-top:6px;">권장 크기: 가로 600px / 세로 400px</div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('16-위젯설정.html');
+
+// 탭 전환
+document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel' + i).classList.add('active');
+  });
+});
+
+// 미리보기 업데이트
+function updatePreview() {
+  const idx = parseInt(document.getElementById('widgetAgent').value);
+  const agent = SAMPLE.agents[idx];
+  const isNormal = agent.status === 'normal';
+  const dot = document.getElementById('previewDot');
+  dot.className = 'widget-status-dot ' + (isNormal ? 'green' : 'yellow');
+  document.getElementById('previewStatus').textContent = isNormal ? '정상' : '경고';
+  document.getElementById('previewPct').textContent = isNormal ? '업계 상위 72%' : '업계 상위 45%';
+}
+
+function updateEmbed() {
+  const isSlack = document.getElementById('emb_slack').checked;
+  document.getElementById('embedTitle').textContent = isSlack ? 'Slack URL 공유' : 'Notion 임베드 코드';
+  document.getElementById('embedCode').innerHTML = `<button class="copy-btn-abs" onclick="showToast('코드가 복사됨')">복사</button>` +
+    (isSlack
+      ? `https://platform.qaagent.io/widget/abc123\n\nSlack 채널에 URL을 그대로 붙여넣으면\n미리보기가 자동으로 표시됩니다.`
+      : `&lt;iframe\n  src="https://platform.qaagent.io/widget/abc123"\n  width="600"\n  height="400"\n  frameborder="0"\n  allow="fullscreen"&gt;&lt;/iframe&gt;`);
+}
+
+function createSnapshot() {
+  const btn = document.getElementById('snapshotBtn');
+  btn.innerHTML = '<div class="spinner"></div> 생성 중...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = '스냅샷 생성';
+    btn.disabled = false;
+    const list = document.getElementById('snapshotList');
+    const row = document.createElement('div');
+    row.className = 'snapshot-row';
+    row.innerHTML = `
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:2px;">2026-05-26 14:00 · D-30</div>
+        <span class="snapshot-url">https://platform.qaagent.io/snap/new001</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('URL이 복사됨')">복사</button>
+      <button class="btn btn-danger btn-sm" onclick="this.closest('.snapshot-row').remove();showToast('삭제됨')">삭제</button>`;
+    list.appendChild(row);
+    showToast('스냅샷이 생성되었습니다 (30일 유효)', 'success');
+  }, 1200);
+}
+</script>
+</body>
+</html>

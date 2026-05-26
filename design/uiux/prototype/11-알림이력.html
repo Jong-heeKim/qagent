@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 알림이력 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.filter-bar { display:flex; gap:6px; padding:10px 16px; background:var(--slate-50); border-bottom:1px solid var(--border); overflow-x:auto; }
+.filter-bar select { font-size:12px; padding:6px 8px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--card-bg); color:var(--text); min-width:80px; flex-shrink:0; }
+.notif-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:8px; cursor:pointer; transition:border-color .15s; border-left:3px solid transparent; }
+.notif-card.sev-danger  { border-left-color:var(--red); }
+.notif-card.sev-warning { border-left-color:var(--yellow); }
+.notif-card:hover { border-color:var(--primary-pale); }
+.notif-top { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.notif-agent { font-size:14px; font-weight:700; color:var(--text); }
+.notif-metric { font-size:12px; color:var(--text-2); margin-bottom:6px; }
+.notif-time { font-size:11px; color:var(--text-3); margin-bottom:8px; }
+.notif-channels { display:flex; gap:10px; font-size:12px; }
+.ch-ok   { color:var(--green-text); font-weight:600; }
+.ch-fail { color:var(--red-text); font-weight:600; cursor:pointer; text-decoration:underline dotted; }
+
+.drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:200; display:none; }
+.drawer-overlay.open { display:block; }
+.drawer { position:absolute; bottom:0; left:0; right:0; background:var(--card-bg); border-radius:16px 16px 0 0; padding:20px 16px 32px; }
+.drawer-handle { width:40px; height:4px; background:var(--border-2); border-radius:2px; margin:0 auto 16px; }
+.drawer-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:12px; }
+.error-box { background:var(--red-bg); border:1px solid var(--red); border-radius:var(--radius-sm); padding:12px; font-size:13px; color:var(--red-text); }
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">알림 이력</span>
+    </div>
+
+    <!-- 필터 바 -->
+    <div class="filter-bar">
+      <select id="filterAgent" onchange="applyFilter()">
+        <option value="">에이전트 전체</option>
+        <option value="챗봇-A">챗봇-A</option>
+        <option value="RAG-B">RAG-B</option>
+      </select>
+      <select id="filterSev" onchange="applyFilter()">
+        <option value="">심각도 전체</option>
+        <option value="danger">긴급</option>
+        <option value="warning">경고</option>
+      </select>
+    </div>
+
+    <div class="content" style="padding-top:8px;">
+      <div id="notifList"></div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+
+    <!-- 발송 실패 드로어 -->
+    <div class="drawer-overlay" id="failDrawer" onclick="if(event.target===this)closeDrawer()">
+      <div class="drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-title">Slack 발송 실패 상세</div>
+        <div class="error-box">
+          <div style="font-weight:700; margin-bottom:6px;">❌ 오류: 웹훅 URL 만료</div>
+          <div>재시도: 3회 · 마지막 시도: 2026-05-25 09:17</div>
+          <div style="margin-top:6px;">대체 채널: 이메일로 전환하여 발송 완료</div>
+        </div>
+        <div style="margin-top:12px; font-size:12px; color:var(--text-3);">06-에이전트상세설정에서 웹훅 URL을 업데이트하세요</div>
+        <button class="btn btn-secondary btn-md btn-full" style="margin-top:16px;" onclick="closeDrawer()">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('11-알림이력.html');
+
+function openDrawer() { document.getElementById('failDrawer').classList.add('open'); }
+function closeDrawer() { document.getElementById('failDrawer').classList.remove('open'); }
+
+function sevBadge(sev, label) {
+  const cls = sev === 'danger' ? 'badge-red' : 'badge-yellow';
+  const dot = sev === 'danger' ? 'dot-red' : 'dot-yellow';
+  return `<span class="badge ${cls}" style="font-size:10px;"><span class="badge-dot ${dot}"></span>${label}</span>`;
+}
+
+function renderList(list) {
+  const el = document.getElementById('notifList');
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:14px;color:var(--text-3);">알림 이력이 없습니다</div>';
+    return;
+  }
+  el.innerHTML = list.map(n => {
+    const slackHtml = n.slack
+      ? `<span class="ch-ok">Slack ✓</span>`
+      : `<span class="ch-fail" onclick="event.stopPropagation();openDrawer()">Slack ✗</span>`;
+    const emailHtml = n.email
+      ? `<span class="ch-ok">이메일 ✓</span>`
+      : `<span style="color:var(--red-text);font-weight:600;">이메일 ✗</span>`;
+    return `
+    <div class="notif-card sev-${n.severity}">
+      <div class="notif-top">
+        ${sevBadge(n.severity, n.severityLabel)}
+        <span class="notif-agent">${n.agent}</span>
+      </div>
+      <div class="notif-metric">${n.metric} 위반</div>
+      <div class="notif-time">${n.date}</div>
+      <div class="notif-channels">${slackHtml}${emailHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function applyFilter() {
+  const agent = document.getElementById('filterAgent').value;
+  const sev   = document.getElementById('filterSev').value;
+  const result = SAMPLE.notifications.filter(n => {
+    if (agent && n.agent !== agent) return false;
+    if (sev   && n.severity !== sev) return false;
+    return true;
+  });
+  renderList(result);
+}
+
+applyFilter();
+</script>
+</body>
+</html>

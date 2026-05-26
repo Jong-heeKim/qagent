@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>09 평가결과 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.score-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.score-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:12px 8px; text-align:center; cursor:pointer; transition:border-color .15s; }
+.score-card.highlight { border-color:var(--primary); box-shadow:0 0 0 2px var(--primary-pale); }
+.score-metric { font-size:10px; color:var(--text-3); font-weight:600; letter-spacing:.3px; margin-bottom:4px; }
+.score-value { font-size:20px; font-weight:800; font-family:var(--font-mono); color:var(--text); line-height:1; margin-bottom:4px; }
+.score-delta { font-size:11px; font-weight:700; font-family:var(--font-mono); }
+.score-delta.up { color:var(--green-text); }
+.score-delta.down { color:var(--red-text); }
+.score-card.status-warning { border-left:3px solid var(--yellow); }
+.score-card.status-danger  { border-left:3px solid var(--red); }
+
+.flag-banner {
+  background:var(--yellow-bg);
+  border:1px solid var(--yellow);
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+  font-size:12px;
+  color:var(--yellow-text);
+  font-weight:600;
+  margin-bottom:16px;
+}
+
+.chart-wrap { overflow-x:auto; margin-bottom:16px; }
+.chart-legend { display:flex; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text-2); }
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+.violation-item { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px; }
+.violation-metric { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.violation-row { display:flex; gap:16px; font-size:12px; color:var(--text-2); flex-wrap:wrap; }
+.violation-val { font-family:var(--font-mono); font-weight:700; }
+.violation-diff.neg { color:var(--red-text); }
+.violation-diff.pos { color:var(--green-text); }
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="08-평가실행.html">‹</a>
+      <div style="flex:1;">
+        <div class="page-header-title">평가 결과</div>
+        <div style="font-size:11px; color:var(--text-3);">챗봇-A · 2026-05-26 · testset-v2.csv</div>
+      </div>
+      <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-3);">eval-101</span>
+    </div>
+
+    <div class="content">
+      <!-- 요약 카드 -->
+      <div class="score-grid">
+        <div class="score-card" id="cardF" onclick="highlightMetric('F')">
+          <div class="score-metric">Faithful.</div>
+          <div class="score-value" style="color:var(--green-text);">0.82</div>
+          <span class="badge badge-green" style="font-size:10px; padding:2px 6px;"><span class="badge-dot dot-green"></span>정상</span>
+          <div class="score-delta up">▲ +0.03</div>
+        </div>
+        <div class="score-card status-warning" id="cardAR" onclick="highlightMetric('AR')">
+          <div class="score-metric">AnswerRel.</div>
+          <div class="score-value" style="color:var(--yellow-text);">0.79</div>
+          <span class="badge badge-yellow" style="font-size:10px; padding:2px 6px;"><span class="badge-dot dot-yellow"></span>경고</span>
+          <div class="score-delta down">▼ -0.05</div>
+        </div>
+        <div class="score-card status-warning" id="cardCR" onclick="highlightMetric('CR')">
+          <div class="score-metric">ContextR.</div>
+          <div class="score-value" style="color:var(--yellow-text);">0.71</div>
+          <span class="badge badge-yellow" style="font-size:10px; padding:2px 6px;"><span class="badge-dot dot-yellow"></span>경고</span>
+          <div class="score-delta down">▼ -0.08</div>
+        </div>
+      </div>
+
+      <!-- 경고 플래그 배너 -->
+      <div class="flag-banner">⚠ AnswerRelevancy 10% 이상 하락 — 즉각적인 점검이 필요합니다</div>
+
+      <!-- 추이 차트 -->
+      <div class="section">
+        <div class="section-title">최근 10회 추이</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563EB;"></div>Faithfulness</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;"></div>AnswerRelevancy</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>ContextRecall</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F97316; border-radius:0; height:2px; width:12px;"></div>임계값</div>
+        </div>
+        <div class="chart-wrap">
+          <svg id="trendChart" width="320" height="180" viewBox="0 0 320 180" style="display:block; min-width:280px;"></svg>
+        </div>
+      </div>
+
+      <!-- 위반 내역 -->
+      <div class="section">
+        <div class="section-title">임계값 위반 내역</div>
+        <div class="violation-item">
+          <div class="violation-metric">AnswerRelevancy <span class="badge badge-yellow" style="font-size:10px;">경고</span></div>
+          <div class="violation-row">
+            <span>현재: <span class="violation-val">0.79</span></span>
+            <span>기준: <span class="violation-val">0.80</span></span>
+            <span>차이: <span class="violation-val violation-diff neg">-0.01</span></span>
+          </div>
+        </div>
+        <div class="violation-item">
+          <div class="violation-metric">ContextRecall <span class="badge badge-yellow" style="font-size:10px;">경계</span></div>
+          <div class="violation-row">
+            <span>현재: <span class="violation-val">0.71</span></span>
+            <span>기준: <span class="violation-val">0.70</span></span>
+            <span>차이: <span class="violation-val violation-diff pos">+0.01</span></span>
+          </div>
+        </div>
+      </div>
+
+      <a href="10-평가이력.html" class="btn btn-secondary btn-md btn-full">평가 이력 →</a>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item active" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('09-평가결과.html');
+
+/* ── SVG 추이 차트 ─────────────────────────────────── */
+const data = SAMPLE.chartData;
+const W = 320, H = 180, PL = 28, PR = 8, PT = 12, PB = 28;
+const cw = W - PL - PR, ch = H - PT - PB;
+const n = data.length;
+const xStep = cw / (n - 1);
+const thresholds = { f: 0.80, ar: 0.80, cr: 0.70 };
+
+function yPos(v) { return PT + ch - (v - 0) / (1.0 - 0) * ch; }
+function xPos(i) { return PL + i * xStep; }
+
+function buildPath(key) {
+  return data.map((d, i) => (i === 0 ? 'M' : 'L') + xPos(i).toFixed(1) + ',' + yPos(d[key]).toFixed(1)).join(' ');
+}
+
+let highlighted = null;
+
+function drawChart() {
+  const svg = document.getElementById('trendChart');
+  svg.innerHTML = '';
+
+  // grid lines
+  [0.6, 0.7, 0.8, 0.9].forEach(v => {
+    const y = yPos(v).toFixed(1);
+    svg.innerHTML += `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    svg.innerHTML += `<text x="${PL - 3}" y="${parseFloat(y) + 3}" text-anchor="end" font-size="9" fill="var(--text-3)">${v.toFixed(1)}</text>`;
+  });
+
+  // threshold lines
+  const thMap = [
+    { key: 'f', color: '#F97316', val: thresholds.f },
+    { key: 'ar', color: '#F97316', val: thresholds.ar },
+    { key: 'cr', color: '#F97316', val: thresholds.cr },
+  ];
+  // single threshold line at 0.80 (dominant)
+  const tY = yPos(0.80).toFixed(1);
+  svg.innerHTML += `<line x1="${PL}" y1="${tY}" x2="${W - PR}" y2="${tY}" stroke="#F97316" stroke-width="1" stroke-dasharray="4,3" opacity=".7"/>`;
+
+  // data lines
+  const lines = [
+    { key: 'f',  color: '#2563EB', label: 'F' },
+    { key: 'ar', color: '#7C3AED', label: 'AR' },
+    { key: 'cr', color: '#059669', label: 'CR' },
+  ];
+  lines.forEach(({ key, color }) => {
+    const opacity = highlighted && highlighted !== key ? 0.25 : 1;
+    svg.innerHTML += `<path d="${buildPath(key)}" fill="none" stroke="${color}" stroke-width="${highlighted === key ? 2.5 : 1.8}" opacity="${opacity}"/>`;
+    // dots
+    data.forEach((d, i) => {
+      if (highlighted && highlighted !== key) return;
+      svg.innerHTML += `<circle cx="${xPos(i).toFixed(1)}" cy="${yPos(d[key]).toFixed(1)}" r="3" fill="${color}" opacity="${opacity}" data-metric="${key}" data-idx="${i}" style="cursor:pointer;"/>`;
+    });
+  });
+
+  // X axis labels
+  data.forEach((d, i) => {
+    if (i % 2 === 0 || i === n - 1) {
+      svg.innerHTML += `<text x="${xPos(i).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--text-3)">${d.date}</text>`;
+    }
+  });
+
+  // tooltip on circle click
+  svg.querySelectorAll('circle').forEach(c => {
+    c.addEventListener('click', function(e) {
+      const idx = parseInt(this.dataset.idx);
+      const key = this.dataset.metric;
+      const d = data[idx];
+      const labels = { f: 'Faithfulness', ar: 'AnswerRelevancy', cr: 'ContextRecall' };
+      showToast(`${d.date} · ${labels[key]}: ${d[key].toFixed(2)}`);
+    });
+  });
+}
+
+function highlightMetric(key) {
+  const map = { F: 'f', AR: 'ar', CR: 'cr' };
+  const k = map[key];
+  highlighted = highlighted === k ? null : k;
+  ['F','AR','CR'].forEach(m => {
+    document.getElementById('card' + m).classList.toggle('highlight', map[m] === highlighted);
+  });
+  drawChart();
+}
+
+drawChart();
+</script>
+</body>
+</html>

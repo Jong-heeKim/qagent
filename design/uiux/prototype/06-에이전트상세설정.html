@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 에이전트상세설정 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <!-- 헤더 -->
+    <div class="page-header">
+      <a class="back-btn" href="04-에이전트목록.html">‹</a>
+      <div style="flex:1;">
+        <div class="page-header-title">챗봇-A</div>
+        <div style="font-size:11px; color:var(--text-3); margin-top:1px; font-family:var(--font-mono);">agnt-001</div>
+      </div>
+      <span class="badge badge-green"><span class="badge-dot dot-green"></span>정상</span>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="0">기본 정보</button>
+      <button class="tab-btn" data-tab="1">임계값</button>
+      <button class="tab-btn" data-tab="2">알림 채널</button>
+    </div>
+
+    <!-- Tab 0: 기본 정보 -->
+    <div class="tab-panel active content" id="panel0">
+      <div class="card" style="padding:0; overflow:hidden; margin-bottom:16px;">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div>에이전트명</div>
+            <div class="setting-sub">챗봇-A</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div>서비스 유형</div>
+            <div class="setting-sub">RAG</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div>API 엔드포인트</div>
+            <div class="setting-sub" style="font-family:var(--font-mono); font-size:11px;">https://chat-api.company.ai/v1</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div>모델명</div>
+            <div class="setting-sub">gpt-4o</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div>API 키</div>
+            <div class="setting-sub" style="font-family:var(--font-mono); letter-spacing:2px;">sk-••••••••••••</div>
+          </div>
+          <button class="btn btn-ghost btn-sm">재입력</button>
+        </div>
+      </div>
+
+      <!-- 연결 상태 -->
+      <div class="card" style="padding:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="font-size:13px; font-weight:600; color:var(--text);">연결 상태</div>
+          <span class="badge badge-green"><span class="badge-dot dot-green"></span>정상</span>
+        </div>
+        <div style="font-size:13px; color:var(--text-2); margin-bottom:12px;">응답시간: <strong style="color:var(--text);">320ms</strong> · 마지막 확인: 2시간 전</div>
+        <button class="btn btn-secondary btn-md btn-full" id="reTestBtn">🔄 연결 테스트 재실행</button>
+      </div>
+    </div>
+
+    <!-- Tab 1: 임계값 설정 -->
+    <div class="tab-panel content" id="panel1">
+      <div style="font-size:12px; color:var(--text-3); margin-bottom:16px;">슬라이더로 임계값을 조정하세요. 위험 ≤ 경고 ≤ 최솟값 순서를 지켜야 합니다.</div>
+
+      <!-- Faithfulness -->
+      <div class="section">
+        <div class="section-title">Faithfulness</div>
+        <div class="card">
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <span class="slider-label">최솟값</span>
+              <input class="slider-input" type="range" id="f_min" min="0" max="1" step="0.01" value="0.80">
+              <span class="slider-value" id="f_min_val">0.80</span>
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">경고 기준</span>
+              <input class="slider-input" type="range" id="f_warn" min="0" max="1" step="0.01" value="0.65">
+              <span class="slider-value" id="f_warn_val">0.65</span>
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">위험 기준</span>
+              <input class="slider-input" type="range" id="f_danger" min="0" max="1" step="0.01" value="0.55">
+              <span class="slider-value" id="f_danger_val">0.55</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AnswerRelevancy -->
+      <div class="section">
+        <div class="section-title">AnswerRelevancy</div>
+        <div class="card">
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <span class="slider-label">최솟값</span>
+              <input class="slider-input" type="range" id="ar_min" min="0" max="1" step="0.01" value="0.80">
+              <span class="slider-value" id="ar_min_val">0.80</span>
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">경고 기준</span>
+              <input class="slider-input" type="range" id="ar_warn" min="0" max="1" step="0.01" value="0.65">
+              <span class="slider-value" id="ar_warn_val">0.65</span>
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">위험 기준</span>
+              <input class="slider-input" type="range" id="ar_danger" min="0" max="1" step="0.01" value="0.55">
+              <span class="slider-value" id="ar_danger_val">0.55</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ContextRecall -->
+      <div class="section">
+        <div class="section-title">ContextRecall</div>
+        <div class="card">
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <span class="slider-label">최솟값</span>
+              <input class="slider-input" type="range" id="cr_min" min="0" max="1" step="0.01" value="0.70">
+              <span class="slider-value" id="cr_min_val">0.70</span>
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">경고 기준</span>
+              <input class="slider-input" type="range" id="cr_warn" min="0" max="1" step="0.01" value="0.60">
+              <span class="slider-value" id="cr_warn_val">0.60</span>
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">위험 기준</span>
+              <input class="slider-input" type="range" id="cr_danger" min="0" max="1" step="0.01" value="0.50">
+              <span class="slider-value" id="cr_danger_val">0.50</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-xl" id="saveThreshold">저장</button>
+    </div>
+
+    <!-- Tab 2: 알림 채널 -->
+    <div class="tab-panel content" id="panel2">
+      <!-- Slack -->
+      <div class="section">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0;">Slack</div>
+          <button class="toggle on" data-toggle></button>
+        </div>
+        <div class="form-group">
+          <label class="label">웹훅 URL</label>
+          <input class="input-field input-mono" type="url" placeholder="https://hooks.slack.com/..." value="https://hooks.slack.com/services/T00/B00/xxx">
+        </div>
+        <button class="btn btn-secondary btn-md" id="slackTestBtn">테스트 발송</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 이메일 -->
+      <div class="section" style="margin-top:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0;">이메일</div>
+          <button class="toggle on" data-toggle></button>
+        </div>
+        <div class="form-group">
+          <label class="label">수신자</label>
+          <div class="tag-input-wrap" id="emailTagWrap">
+            <span class="tag">dev@company.ai <button class="tag-remove" onclick="this.parentElement.remove()">✕</button></span>
+            <span class="tag">qa@company.ai <button class="tag-remove" onclick="this.parentElement.remove()">✕</button></span>
+            <input class="tag-input" id="emailTagInput" type="email" placeholder="이메일 추가 후 Enter">
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-md" id="emailTestBtn">테스트 발송</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Teams -->
+      <div class="section" style="margin-top:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0;">Microsoft Teams</div>
+          <button class="toggle" data-toggle></button>
+        </div>
+        <div class="form-group">
+          <label class="label">웹훅 URL</label>
+          <input class="input-field input-mono" type="url" placeholder="https://outlook.office.com/webhook/..." disabled style="opacity:0.5;">
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-xl" id="saveAlerts">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('06-에이전트상세설정.html');
+
+// 탭 전환
+document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel' + i).classList.add('active');
+  });
+});
+
+// 슬라이더 연동
+[['f_min','f_min_val'],['f_warn','f_warn_val'],['f_danger','f_danger_val'],
+ ['ar_min','ar_min_val'],['ar_warn','ar_warn_val'],['ar_danger','ar_danger_val'],
+ ['cr_min','cr_min_val'],['cr_warn','cr_warn_val'],['cr_danger','cr_danger_val']].forEach(([sid,vid]) => {
+  initSlider(sid, vid);
+});
+
+// 연결 테스트
+document.getElementById('reTestBtn').addEventListener('click', function() {
+  this.innerHTML = '<div class="spinner"></div> 테스트 중...';
+  this.disabled = true;
+  setTimeout(() => {
+    this.innerHTML = '🔄 연결 테스트 재실행';
+    this.disabled = false;
+    showToast('✅ 연결 성공 (318ms)', 'success');
+  }, 1500);
+});
+
+// 저장
+document.getElementById('saveThreshold').addEventListener('click', () => showToast('임계값이 저장되었습니다', 'success'));
+document.getElementById('saveAlerts').addEventListener('click', () => showToast('알림 채널이 저장되었습니다', 'success'));
+
+// 테스트 발송
+document.getElementById('slackTestBtn').addEventListener('click', () => showToast('Slack 테스트 발송 완료', 'success'));
+document.getElementById('emailTestBtn').addEventListener('click', () => showToast('이메일 테스트 발송 완료', 'success'));
+
+// 이메일 태그 입력
+document.getElementById('emailTagInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && this.value.includes('@')) {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = this.value + ' <button class="tag-remove" onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('emailTagWrap').insertBefore(tag, this);
+    this.value = '';
+  }
+});
+</script>
+</body>
+</html>

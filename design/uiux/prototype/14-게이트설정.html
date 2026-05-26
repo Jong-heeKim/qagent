@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>14 게이트설정 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.yaml-block {
+  background:var(--slate-900, #0F172A);
+  border-radius:var(--radius);
+  padding:16px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  line-height:1.6;
+  overflow-x:auto;
+  position:relative;
+  white-space:pre;
+}
+.yaml-key   { color:#60A5FA; }
+.yaml-val   { color:#34D399; }
+.yaml-comment { color:#6B7280; }
+.copy-btn-abs {
+  position:absolute; top:8px; right:8px;
+  padding:4px 10px; font-size:11px;
+  background:rgba(255,255,255,.1); color:#E2E8F0;
+  border:1px solid rgba(255,255,255,.2); border-radius:6px; cursor:pointer;
+}
+.copy-btn-abs:hover { background:rgba(255,255,255,.2); }
+.webhook-box { background:var(--primary-ghost); border:1px solid var(--primary-pale); border-radius:var(--radius); padding:14px; margin-bottom:16px; }
+.webhook-url { font-family:var(--font-mono); font-size:11px; color:var(--primary); word-break:break-all; margin-bottom:8px; }
+.snippet-block {
+  background:var(--slate-900, #0F172A);
+  border-radius:var(--radius);
+  padding:14px;
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:#CBD5E1;
+  line-height:1.7;
+  overflow-x:auto;
+  position:relative;
+  white-space:pre;
+}
+.sn-key { color:#F472B6; }
+.sn-str { color:#34D399; }
+.sn-var { color:#FBBF24; }
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">게이트 설정</span>
+    </div>
+
+    <div class="content">
+      <!-- YAML 설정 -->
+      <div class="section">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div class="section-title" style="margin-bottom:0;">YAML 설정</div>
+        </div>
+        <div class="yaml-block" id="yamlBlock">
+          <button class="copy-btn-abs" onclick="copyYaml()">복사</button>
+<span class="yaml-comment"># QaAgent 품질 게이트 설정</span>
+<span class="yaml-comment"># 에이전트: 챗봇-A (agnt-001)</span>
+
+<span class="yaml-key">gate_id</span>: <span class="yaml-val">gate-chatbot-a-v1</span>
+<span class="yaml-key">agent_id</span>: <span class="yaml-val">agnt-001</span>
+
+<span class="yaml-key">thresholds</span>:
+  <span class="yaml-key">faithfulness_min</span>: <span class="yaml-val">0.80</span>
+  <span class="yaml-key">answer_relevancy_min</span>: <span class="yaml-val">0.80</span>
+  <span class="yaml-key">context_recall_min</span>: <span class="yaml-val">0.70</span>
+
+<span class="yaml-key">mode</span>: <span class="yaml-val">light</span>   <span class="yaml-comment"># light | full</span>
+<span class="yaml-key">testset_id</span>: <span class="yaml-val">ts-001</span>
+<span class="yaml-key">fail_action</span>: <span class="yaml-val">block</span>  <span class="yaml-comment"># block | warn</span>
+        </div>
+      </div>
+
+      <!-- 웹훅 URL -->
+      <div class="section">
+        <div class="section-title">게이트 웹훅 URL</div>
+        <div class="webhook-box">
+          <div class="webhook-url" id="webhookUrl">https://api.qaagent.io/gate/agnt-001/trigger</div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="copyWebhook()">URL 복사</button>
+            <div style="font-size:11px; color:var(--text-3); line-height:1.4; padding-top:2px;">API 키와 함께 사용<br>X-QA-Key: sk-••••••</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 연동 가이드 탭 -->
+      <div class="section">
+        <div class="section-title">CI/CD 연동 가이드</div>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="0">GitHub Actions</button>
+          <button class="tab-btn" data-tab="1">Jenkins</button>
+        </div>
+
+        <div class="tab-panel active" id="panel0" style="margin-top:8px;">
+          <div class="snippet-block" id="ghSnippet"><button class="copy-btn-abs" onclick="copySnippet('gh')">복사</button><span class="sn-key">- name</span>: <span class="sn-str">Quality Gate Check</span>
+  <span class="sn-key">uses</span>: <span class="sn-str">actions/qaagent-gate@v1</span>
+  <span class="sn-key">with</span>:
+    <span class="sn-key">webhook_url</span>: <span class="sn-var">${{ secrets.QAGATE_URL }}</span>
+    <span class="sn-key">api_key</span>: <span class="sn-var">${{ secrets.QAGATE_KEY }}</span>
+    <span class="sn-key">fail_on_violation</span>: <span class="sn-str">true</span></div>
+        </div>
+
+        <div class="tab-panel" id="panel1" style="margin-top:8px;">
+          <div class="snippet-block" id="jkSnippet"><button class="copy-btn-abs" onclick="copySnippet('jk')">복사</button><span class="sn-key">stage</span>(<span class="sn-str">'Quality Gate'</span>) {
+  steps {
+    script {
+      def res = httpRequest(
+        url: env.<span class="sn-var">QAGATE_URL</span>,
+        httpMode: <span class="sn-str">'POST'</span>,
+        customHeaders: [[
+          name: <span class="sn-str">'X-QA-Key'</span>,
+          value: env.<span class="sn-var">QAGATE_KEY</span>
+        ]]
+      )
+      if (res.status != 200) error(<span class="sn-str">'Gate failed'</span>)
+    }
+  }
+}</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-xl" id="saveBtn">저장</button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('14-게이트설정.html');
+
+// 탭 전환
+document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel' + i).classList.add('active');
+  });
+});
+
+function copyYaml() {
+  const text = `gate_id: gate-chatbot-a-v1\nagent_id: agnt-001\nthresholds:\n  faithfulness_min: 0.80\n  answer_relevancy_min: 0.80\n  context_recall_min: 0.70\nmode: light\ntestset_id: ts-001\nfail_action: block`;
+  navigator.clipboard.writeText(text).then(() => showToast('YAML이 클립보드에 복사됨'));
+}
+function copyWebhook() {
+  navigator.clipboard.writeText('https://api.qaagent.io/gate/agnt-001/trigger').then(() => showToast('URL이 클립보드에 복사됨'));
+}
+function copySnippet(type) {
+  showToast('스니펫이 클립보드에 복사됨');
+}
+document.getElementById('saveBtn').addEventListener('click', () => showToast('게이트 설정이 저장되었습니다', 'success'));
+</script>
+</body>
+</html>

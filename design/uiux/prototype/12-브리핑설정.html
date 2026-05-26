@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 브리핑설정 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">주간 브리핑 설정</span>
+    </div>
+
+    <div class="content">
+      <div style="background:var(--primary-ghost); border-radius:var(--radius-sm); padding:10px 12px; font-size:12px; color:var(--primary); font-weight:600; margin-bottom:20px;">
+        📅 매주 월요일 오전 9시 자동 발송 · 실패 시 화요일 재발송
+      </div>
+
+      <!-- Slack -->
+      <div class="section">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0;">Slack</div>
+          <button class="toggle on" data-toggle></button>
+        </div>
+        <div class="form-group">
+          <label class="label">웹훅 URL</label>
+          <input class="input-field input-mono" type="url" placeholder="https://hooks.slack.com/..." value="https://hooks.slack.com/services/T00/B00/briefing">
+        </div>
+        <button class="btn btn-secondary btn-md" id="slackTestBtn">테스트 발송</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 이메일 -->
+      <div class="section" style="margin-top:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0;">이메일</div>
+          <button class="toggle on" data-toggle></button>
+        </div>
+        <div class="form-group">
+          <label class="label">수신자</label>
+          <div class="tag-input-wrap" id="emailTagWrap">
+            <span class="tag">pm@company.ai <button class="tag-remove" onclick="this.parentElement.remove()">✕</button></span>
+            <span class="tag">lead@company.ai <button class="tag-remove" onclick="this.parentElement.remove()">✕</button></span>
+            <input class="tag-input" id="emailTagInput" type="email" placeholder="이메일 추가 후 Enter">
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-md" id="emailTestBtn">테스트 발송</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 에이전트별 발송 설정 -->
+      <div class="section" style="margin-top:16px;">
+        <div class="section-title">에이전트별 발송</div>
+        <div class="card" style="padding:8px 14px;">
+          <div class="checkbox-row">
+            <input type="checkbox" id="agnt001" checked>
+            <label class="checkbox-label" for="agnt001">챗봇-A</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="agnt002" checked>
+            <label class="checkbox-label" for="agnt002">RAG-B</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="agnt003" disabled>
+            <label class="checkbox-label" for="agnt003" style="color:var(--text-3);">검색-C <span style="font-size:11px;">(비활성)</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; font-size:12px; color:var(--text-3); margin-top:8px; margin-bottom:20px;">
+        ℹ Slack 발송 실패 시 화요일 오전 9시에 자동으로 재발송됩니다
+      </div>
+
+      <button class="btn btn-primary btn-xl" id="saveBtn">저장</button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('12-브리핑설정.html');
+
+document.getElementById('slackTestBtn').addEventListener('click', () => showToast('Slack 테스트 발송 완료', 'success'));
+document.getElementById('emailTestBtn').addEventListener('click', () => showToast('이메일 테스트 발송 완료', 'success'));
+document.getElementById('saveBtn').addEventListener('click', () => showToast('브리핑 설정이 저장되었습니다', 'success'));
+
+document.getElementById('emailTagInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && this.value.includes('@')) {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = this.value + ' <button class="tag-remove" onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('emailTagWrap').insertBefore(tag, this);
+    this.value = '';
+  }
+});
+</script>
+</body>
+</html>

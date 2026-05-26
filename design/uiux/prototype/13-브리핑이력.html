@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13 브리핑이력 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.briefing-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:8px; cursor:pointer; transition:border-color .15s; }
+.briefing-card:hover { border-color:var(--primary-pale); }
+.briefing-date { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.briefing-meta { font-size:12px; color:var(--text-3); margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">브리핑 이력</span>
+      <select style="font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--card-bg); color:var(--text);">
+        <option>최근 1개월</option>
+        <option>최근 3개월</option>
+        <option>전체</option>
+      </select>
+    </div>
+
+    <div class="content">
+      <div id="briefingList"></div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+
+    <!-- 브리핑 본문 모달 -->
+    <div class="modal-overlay" id="briefingModal">
+      <div class="modal-sheet" style="max-height:75%;">
+        <div class="modal-handle"></div>
+        <div class="modal-title" id="briefingModalTitle">주간 품질 브리핑</div>
+        <div id="briefingBody" style="font-size:14px; color:var(--text-2); line-height:1.7;"></div>
+        <button class="btn btn-secondary btn-md btn-full" style="margin-top:16px;" onclick="closeModal('briefingModal')">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('13-브리핑이력.html');
+
+const briefingBodies = {
+  'br-001': {
+    title: '주간 품질 브리핑 — 2026-05-19',
+    body: `지난 주 정확도는 업계 평균보다 <strong>8% 높았습니다</strong>. 화요일 일시적 주의 구간 진입 후 수요일에 복구되었습니다.<br><br>
+<strong>챗봇-A</strong>: 업계 상위 72% 유지<br>
+<strong>RAG-B</strong>: 업계 상위 45% (전주 대비 -3%)<br><br>
+다음 주는 정기 점검 이후 품질 지표 개선이 예상됩니다.`
+  },
+  'br-002': {
+    title: '주간 품질 브리핑 — 2026-05-12 (재발송)',
+    body: `지난 주는 전반적으로 안정적인 품질을 유지했습니다.<br><br>
+<strong>챗봇-A</strong>: 업계 상위 68% · 전주 대비 +2%<br>
+<strong>RAG-B</strong>: 업계 상위 48% · 전주와 유사<br><br>
+⚠ Slack 발송 실패로 화요일 오전 9시에 재발송되었습니다.`
+  },
+  'br-003': {
+    title: '주간 품질 브리핑 — 2026-05-05',
+    body: `지난 주 전체 서비스 품질은 양호한 수준을 유지했습니다.<br><br>
+<strong>챗봇-A</strong>: 업계 상위 70%<br>
+<strong>RAG-B</strong>: 업계 상위 50%<br><br>
+황금연휴 기간에도 안정적인 응답 품질이 확인되었습니다.`
+  }
+};
+
+function openBriefing(id) {
+  const b = briefingBodies[id];
+  if (!b) return;
+  document.getElementById('briefingModalTitle').textContent = b.title;
+  document.getElementById('briefingBody').innerHTML = b.body;
+  openModal('briefingModal');
+}
+
+const el = document.getElementById('briefingList');
+el.innerHTML = SAMPLE.briefings.map(b => {
+  const isRetry = b.status === 'retry';
+  const badgeCls = isRetry ? 'badge-yellow' : 'badge-green';
+  const dotCls   = isRetry ? 'dot-yellow' : 'dot-green';
+  return `
+  <div class="briefing-card" onclick="openBriefing('${b.id}')">
+    <div class="briefing-date">${b.date}</div>
+    <div class="briefing-meta">${b.channels} · ${b.recipients}명</div>
+    <span class="badge ${badgeCls}" style="font-size:11px;"><span class="badge-dot ${dotCls}"></span>${b.statusLabel}</span>
+  </div>`;
+}).join('');
+</script>
+</body>
+</html>

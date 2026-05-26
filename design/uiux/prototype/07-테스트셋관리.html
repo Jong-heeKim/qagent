@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>07 테스트셋관리 — QaAgent</title>
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<nav class="proto-nav" id="protoNav"></nav>
+<div class="phone-frame">
+  <div class="screen">
+    <div class="page-header">
+      <a class="back-btn" href="03-메인대시보드.html">‹</a>
+      <span class="page-header-title">테스트셋 관리</span>
+    </div>
+
+    <div class="content">
+      <!-- 업로드 영역 -->
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">파일을 여기에 드래그하거나</div>
+        <button class="btn btn-primary btn-md" style="margin-top:10px;" onclick="document.getElementById('fileInput').click()">파일 선택</button>
+        <input type="file" id="fileInput" accept=".csv,.json,.yaml,.yml" style="display:none;">
+        <div class="upload-hint" style="margin-top:10px;">CSV, JSON, YAML 지원 · 최대 10MB<br>필수 컬럼: question / answer / context</div>
+      </div>
+
+      <!-- 업로드 결과 (성공) -->
+      <div id="uploadResult" style="display:none; margin-top:12px;">
+        <div style="background:var(--green-bg); border:1px solid var(--green); border-radius:var(--radius); padding:14px;">
+          <div style="font-size:14px; font-weight:700; color:var(--green-text); margin-bottom:6px;">✅ testset-v3.csv 업로드 완료</div>
+          <div style="font-size:12px; color:var(--green-text);">ID: ts-003 · 케이스: 120건</div>
+          <div style="font-size:12px; color:var(--green-text); margin-top:4px;">question ✓ / answer ✓ / context ✓</div>
+        </div>
+      </div>
+
+      <!-- 업로드된 목록 -->
+      <div class="section" style="margin-top:20px;">
+        <div class="section-title">업로드된 테스트셋</div>
+        <div class="card" style="padding:0; overflow:hidden;">
+          <div class="list-item" onclick="openModal('previewModal')">
+            <span style="font-size:24px;">📊</span>
+            <div class="list-item-content">
+              <div class="list-item-title">testset-v2.csv</div>
+              <div class="list-item-sub">150건 · 어제 업로드</div>
+            </div>
+            <div class="list-item-right">
+              <span class="badge badge-green" style="font-size:11px;">정상</span>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); openModal('deleteTestsetModal')">삭제</button>
+            </div>
+          </div>
+          <div class="list-item" onclick="openModal('previewModal')">
+            <span style="font-size:24px;">📋</span>
+            <div class="list-item-content">
+              <div class="list-item-title">testset-v1.json</div>
+              <div class="list-item-sub">80건 · 3일 전 업로드</div>
+            </div>
+            <div class="list-item-right">
+              <span class="badge badge-green" style="font-size:11px;">정상</span>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); openModal('deleteTestsetModal')">삭제</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 다음: 평가 실행 안내 -->
+      <div style="background:var(--primary-ghost); border-radius:var(--radius); padding:14px; margin-top:8px; text-align:center;">
+        <div style="font-size:13px; color:var(--primary); font-weight:600; margin-bottom:8px;">테스트셋 준비 완료</div>
+        <a href="08-평가실행.html" class="btn btn-primary btn-md btn-full">▶ 지금 평가 실행하기</a>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a class="nav-item" href="03-메인대시보드.html"><span class="nav-icon">🏠</span>홈</a>
+      <a class="nav-item" href="04-에이전트목록.html"><span class="nav-icon">🤖</span>에이전트</a>
+      <a class="nav-item active" href="08-평가실행.html"><span class="nav-icon">📊</span>평가</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>더보기</a>
+    </div>
+
+    <!-- 미리보기 모달 -->
+    <div class="modal-overlay" id="previewModal">
+      <div class="modal-sheet" style="max-height:80%;">
+        <div class="modal-handle"></div>
+        <div class="modal-title">testset-v2.csv · 150건</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr style="background:var(--slate-100);">
+                <th style="padding:8px; text-align:left; color:var(--text-2); border-bottom:1px solid var(--border);">#</th>
+                <th style="padding:8px; text-align:left; color:var(--text-2); border-bottom:1px solid var(--border);">question</th>
+                <th style="padding:8px; text-align:left; color:var(--text-2); border-bottom:1px solid var(--border);">answer</th>
+                <th style="padding:8px; text-align:left; color:var(--text-2); border-bottom:1px solid var(--border);">context</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100); color:var(--text-3);">1</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100);">환불 정책은?</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100);">7일 내 환불 가능</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100); max-width:80px; overflow:hidden; text-overflow:ellipsis;">고객센터 안내...</td></tr>
+              <tr><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100); color:var(--text-3);">2</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100);">배송 기간은?</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100);">3~5 영업일</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100); max-width:80px; overflow:hidden; text-overflow:ellipsis;">배송 정책 문서...</td></tr>
+              <tr><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100); color:var(--text-3);">3</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100);">회원 혜택은?</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100);">포인트 5% 적립</td><td style="padding:6px 8px; border-bottom:1px solid var(--slate-100); max-width:80px; overflow:hidden; text-overflow:ellipsis;">멤버십 약관...</td></tr>
+              <tr><td style="padding:6px 8px; color:var(--text-3);">...</td><td style="padding:6px 8px;" colspan="3" style="color:var(--text-3);">147개 행 더 있음</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-md btn-full" style="margin-top:14px;" onclick="closeModal('previewModal')">닫기</button>
+      </div>
+    </div>
+
+    <!-- 삭제 모달 -->
+    <div class="modal-center" id="deleteTestsetModal">
+      <div class="modal-box">
+        <div class="modal-title">테스트셋 삭제</div>
+        <p style="font-size:14px; color:var(--text-2); margin-bottom:16px;">testset-v2.csv를 삭제하시겠습니까?</p>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-md" style="flex:1;" onclick="closeModal('deleteTestsetModal')">취소</button>
+          <button class="btn btn-danger btn-md" style="flex:1;" onclick="closeModal('deleteTestsetModal'); showToast('삭제되었습니다')">삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderProtoNav('07-테스트셋관리.html');
+
+// 드래그앤드롭
+const area = document.getElementById('uploadArea');
+area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
+area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+area.addEventListener('drop', e => {
+  e.preventDefault();
+  area.classList.remove('drag-over');
+  simulateUpload();
+});
+
+document.getElementById('fileInput').addEventListener('change', simulateUpload);
+
+function simulateUpload() {
+  area.style.opacity = '0.5';
+  setTimeout(() => {
+    area.style.opacity = '1';
+    document.getElementById('uploadResult').style.display = 'block';
+    showToast('testset-v3.csv 업로드 완료', 'success');
+  }, 1200);
+}
+</script>
+</body>
+</html>
