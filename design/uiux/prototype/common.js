@@ -2,6 +2,69 @@
    QaAgent 프로토타입 — 공통 JavaScript
    ============================================================ */
 
+/* ── 웹 레이아웃 설정 ──────────────────────────────────── */
+const AUTH_PAGES = new Set(['01-로그인.html', '02-회원가입.html']);
+const STANDALONE_PAGES = new Set(['17-위젯공개조회.html']);
+
+const SIDEBAR_NAV = [
+  { icon: '🏠', label: '대시보드',      file: '03-메인대시보드.html' },
+  { section: '에이전트' },
+  { icon: '🤖', label: '에이전트 목록', file: '04-에이전트목록.html' },
+  { section: '평가' },
+  { icon: '▶', label: '평가 실행',      file: '08-평가실행.html' },
+  { icon: '📋', label: '평가 이력',     file: '10-평가이력.html' },
+  { section: '모니터링' },
+  { icon: '🔔', label: '알림 이력',     file: '11-알림이력.html' },
+  { section: '브리핑' },
+  { icon: '📰', label: '브리핑 설정',   file: '12-브리핑설정.html' },
+  { icon: '📅', label: '브리핑 이력',   file: '13-브리핑이력.html' },
+  { section: '게이트' },
+  { icon: '⚙', label: '게이트 설정',    file: '14-게이트설정.html' },
+  { icon: '✅', label: '게이트 결과',   file: '15-게이트결과.html' },
+  { section: '위젯' },
+  { icon: '📊', label: '위젯 설정',     file: '16-위젯설정.html' },
+  { section: '데이터' },
+  { icon: '📄', label: '테스트셋 관리', file: '07-테스트셋관리.html' },
+];
+
+function buildSidebar(currentFile) {
+  const aside = document.createElement('aside');
+  aside.className = 'sidebar';
+
+  aside.innerHTML = `<div class="sidebar-logo">QA Agent <span>Platform</span></div>`;
+
+  const nav = document.createElement('nav');
+  nav.className = 'sidebar-nav';
+  SIDEBAR_NAV.forEach(item => {
+    if (item.section) {
+      const sec = document.createElement('div');
+      sec.className = 'sidebar-section-label';
+      sec.textContent = item.section;
+      nav.appendChild(sec);
+    } else {
+      const a = document.createElement('a');
+      a.className = 'sidebar-link' + (item.file === currentFile ? ' active' : '');
+      a.href = item.file;
+      a.innerHTML = `<span class="sidebar-link-icon">${item.icon}</span>${item.label}`;
+      nav.appendChild(a);
+    }
+  });
+  aside.appendChild(nav);
+
+  const u = SAMPLE.user;
+  const userEl = document.createElement('div');
+  userEl.className = 'sidebar-user';
+  userEl.innerHTML = `
+    <div class="sidebar-avatar">${u.name[0]}</div>
+    <div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;">${u.name}</div>
+      <div style="font-size:11px;">${u.role}</div>
+    </div>`;
+  aside.appendChild(userEl);
+
+  return aside;
+}
+
 /* ── 화면 목록 ─────────────────────────────────────────── */
 const SCREENS = [
   { num: '01', name: '로그인',        file: '01-로그인.html' },
@@ -109,19 +172,39 @@ const SAMPLE = {
 
 /* ── 프로토타입 네비게이션 렌더링 ─────────────────────── */
 function renderProtoNav(currentFile) {
+  /* 웹 모드 활성화 */
+  document.body.classList.add('web-mode');
+  if (AUTH_PAGES.has(currentFile)) document.body.classList.add('auth-mode');
+
+  /* 프로토 네비 빌드 */
   const nav = document.getElementById('protoNav');
-  if (!nav) return;
-  const label = document.createElement('span');
-  label.className = 'proto-nav-label';
-  label.textContent = '화면:';
-  nav.appendChild(label);
-  SCREENS.forEach(s => {
-    const btn = document.createElement('a');
-    btn.className = 'proto-btn' + (currentFile === s.file ? ' active' : '');
-    btn.href = s.file;
-    btn.textContent = s.num + ' ' + s.name;
-    nav.appendChild(btn);
-  });
+  if (nav) {
+    const label = document.createElement('span');
+    label.className = 'proto-nav-label';
+    label.textContent = '화면:';
+    nav.appendChild(label);
+    SCREENS.forEach(s => {
+      const btn = document.createElement('a');
+      btn.className = 'proto-btn' + (currentFile === s.file ? ' active' : '');
+      btn.href = s.file;
+      btn.textContent = s.num + ' ' + s.name;
+      nav.appendChild(btn);
+    });
+    /* 프로토 네비 높이를 CSS 변수로 설정 */
+    requestAnimationFrame(() => {
+      const h = nav.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--proto-nav-h', Math.round(h) + 'px');
+    });
+  }
+
+  /* 사이드바 주입 (인증/스탠드얼론 페이지 제외) */
+  if (!AUTH_PAGES.has(currentFile) && !STANDALONE_PAGES.has(currentFile)) {
+    const frame = document.querySelector('.phone-frame');
+    if (frame) {
+      const sidebar = buildSidebar(currentFile);
+      frame.insertBefore(sidebar, frame.firstChild);
+    }
+  }
 }
 
 /* ── 토스트 ───────────────────────────────────────────── */
