@@ -1,5 +1,6 @@
 # AlyAC 백신 백업 파일
 *.alyac
 
-# Claude Code
+# Claude Code 작업 디렉토리 (스크린샷, 레퍼런스 이미지 등)
 .playwright-mcp/
+claude/
