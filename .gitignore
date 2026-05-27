@@ -1,0 +1,5 @@
+# AlyAC 백신 백업 파일
+*.alyac
+
+# Claude Code
+.playwright-mcp/
