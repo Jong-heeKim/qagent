@@ -12,6 +12,7 @@ const SIDEBAR_NAV = [
   { icon: '🤖', label: '에이전트 목록', file: '04-에이전트목록.html' },
   { section: '평가' },
   { icon: '▶', label: '평가 실행',      file: '08-평가실행.html' },
+  { icon: '📄', label: '테스트셋 관리', file: '07-테스트셋관리.html' },
   { icon: '📋', label: '평가 이력',     file: '10-평가이력.html' },
   { section: '모니터링' },
   { icon: '🔔', label: '알림 이력',     file: '11-알림이력.html' },
@@ -23,8 +24,6 @@ const SIDEBAR_NAV = [
   { icon: '✅', label: '게이트 결과',   file: '15-게이트결과.html' },
   { section: '위젯' },
   { icon: '📊', label: '위젯 설정',     file: '16-위젯설정.html' },
-  { section: '데이터' },
-  { icon: '📄', label: '테스트셋 관리', file: '07-테스트셋관리.html' },
 ];
 
 function buildSidebar(currentFile) {
